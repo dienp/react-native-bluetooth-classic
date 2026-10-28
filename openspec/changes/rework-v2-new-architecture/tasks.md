@@ -51,24 +51,24 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
 
 ## 3. JS data path
 
-- [ ] 3.1 Implement streaming codecs (utf8, ascii, latin1) and the hex and base64 helpers, with no `buffer` dependency, and add a lint rule that bans imports of `buffer`. Verify with Jest tests covering split UTF-8, the 0xFF byte becoming U+FFFD, and round-trips; also verify that `npm ls buffer` is empty.
-- [ ] 3.2 Implement `connect()`, `accept()`, `cancelAccept()`, `getConnections()` and `getConnection()`, and the `Connection` wrapper: state cache, `onStateChange`, `AbortSignal` cancellation, and `onDisconnected` with exactly-once delivery and replay for late listeners. Verify with Jest tests for the `connection-lifecycle` scenarios that JS can observe against the fake.
-- [ ] 3.3 Implement the inbound stream:
+- [x] 3.1 Implement streaming codecs (utf8, ascii, latin1) and the hex and base64 helpers, with no `buffer` dependency, and add a lint rule that bans imports of `buffer`. Verify with Jest tests covering split UTF-8, the 0xFF byte becoming U+FFFD, and round-trips; also verify that `npm ls buffer` is empty.
+- [x] 3.2 Implement `connect()`, `accept()`, `cancelAccept()`, `getConnections()` and `getConnection()`, and the `Connection` wrapper: state cache, `onStateChange`, `AbortSignal` cancellation, and `onDisconnected` with exactly-once delivery and replay for late listeners. Verify with Jest tests for the `connection-lifecycle` scenarios that JS can observe against the fake.
+- [x] 3.3 Implement the inbound stream:
   - a `seq` continuity check
   - a backlog held until the first consumer
   - fan-out to multiple consumers
   - `maxBufferBytes` enforcement that leads to a native `closeWithError` with `BUFFER_OVERFLOW`
 
   Verify with Jest tests for the `data-transfer` backlog and bounded-buffering scenarios.
-- [ ] 3.4 Implement the `Framer` interface and the `delimiter`, `fixedLength` and `raw` framers. Verify with property-based Jest tests (fast-check) that random re-chunking of the same input always yields identical frames.
-- [ ] 3.5 Implement readers:
+- [x] 3.4 Implement the `Framer` interface and the `delimiter`, `fixedLength` and `raw` framers. Verify with property-based Jest tests (fast-check) that random re-chunking of the same input always yields identical frames.
+- [x] 3.5 Implement readers:
   - `read({ timeoutMs, signal })`, rejecting with `READ_TIMEOUT`
   - `for await` iteration rules, including the trailing partial frame on a `'remote'` close
   - `maxFrameBytes`
 
   Verify with Jest tests for every "Reading frames" and "Framed readers" scenario.
-- [ ] 3.6 Implement `connection.write()` input handling: encodings, the empty-payload no-op and `INVALID_ARGUMENT`. Verify with Jest tests against the fake that unawaited writes reach the fake in call order.
-- [ ] 3.7 Write `docs/data.md` covering writes, readers, framers, encodings, a custom framer example and buffer limits. Verify its examples type-check in CI.
+- [x] 3.6 Implement `connection.write()` input handling: encodings, the empty-payload no-op and `INVALID_ARGUMENT`. Verify with Jest tests against the fake that unawaited writes reach the fake in call order.
+- [x] 3.7 Write `docs/data.md` covering writes, readers, framers, encodings, a custom framer example and buffer limits. Verify its examples type-check in CI.
 
 ## 4. Android foundation
 

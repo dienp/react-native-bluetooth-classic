@@ -21,6 +21,18 @@ export default defineConfig([
     rules: {
       'react/react-in-jsx-scope': 'off',
       'prettier/prettier': 'error',
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'buffer',
+              message:
+                'v2 does not depend on a Buffer polyfill; use Uint8Array and src/data helpers.',
+            },
+          ],
+        },
+      ],
     },
   },
   {

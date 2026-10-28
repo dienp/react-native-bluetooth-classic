@@ -96,6 +96,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-ft-flow": "^3.0.11",
     "eslint-plugin-prettier": "^5.5.7",
+    "fast-check": "^4.10.2",
     "jest": "^30.5.2",
     "prettier": "^3.9.10",
     "react": "19.3.0",

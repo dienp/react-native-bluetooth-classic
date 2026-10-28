@@ -31,6 +31,12 @@ interface Entry<P> {
 }
 
 const hubs = new Set<{ reset(): void }>();
+const resetCallbacks = new Set<() => void>();
+
+/** @internal Registers state to clear whenever the event hubs are reset. */
+export function onEventHubsReset(callback: () => void): void {
+  resetCallbacks.add(callback);
+}
 
 /**
  * @internal Drops every listener and native subscription. Used by the Jest
@@ -38,6 +44,7 @@ const hubs = new Set<{ reset(): void }>();
  */
 export function __resetEventHubs(): void {
   hubs.forEach((hub) => hub.reset());
+  resetCallbacks.forEach((callback) => callback());
 }
 
 /**

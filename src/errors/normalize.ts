@@ -21,7 +21,7 @@ export function toBluetoothClassicError(
   context: ErrorContext = {}
 ): BluetoothClassicError {
   if (error instanceof BluetoothClassicError) {
-    return error;
+    return withContext(error, context);
   }
 
   const record = isRecord(error) ? error : {};
@@ -67,6 +67,34 @@ export function toBluetoothClassicError(
       : 'Unexpected failure',
     details
   );
+}
+
+/** Adds call context the error lacks; returns the same error when nothing is missing. */
+function withContext(
+  error: BluetoothClassicError,
+  context: ErrorContext
+): BluetoothClassicError {
+  const addDevice =
+    error.deviceId === undefined && context.deviceId !== undefined;
+  const addConnection =
+    error.connectionId === undefined && context.connectionId !== undefined;
+  if (!addDevice && !addConnection) {
+    return error;
+  }
+  const details: BluetoothClassicErrorDetails = { platform: error.platform };
+  const deviceId = error.deviceId ?? context.deviceId;
+  if (deviceId !== undefined) details.deviceId = deviceId;
+  const connectionId = error.connectionId ?? context.connectionId;
+  if (connectionId !== undefined) details.connectionId = connectionId;
+  if (error.missingPermissions !== undefined) {
+    details.missingPermissions = error.missingPermissions;
+  }
+  if (error.nativeCode !== undefined) details.nativeCode = error.nativeCode;
+  if (error.nativeMessage !== undefined)
+    details.nativeMessage = error.nativeMessage;
+  const copy = new BluetoothClassicError(error.code, error.message, details);
+  if (error.stack !== undefined) copy.stack = error.stack;
+  return copy;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

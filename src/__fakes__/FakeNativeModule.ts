@@ -6,6 +6,8 @@
  */
 import type { CodegenTypes, EventSubscription } from 'react-native';
 
+import { fromBase64, toBase64 } from '../data/base64';
+import { encodeText } from '../data/codecs';
 import { ErrorCode } from '../errors/ErrorCode';
 import type {
   NativeAcceptOptions,
@@ -115,6 +117,34 @@ type Failure = {
   userInfo?: Record<string, unknown>;
 };
 
+interface ConnectTarget {
+  key: string;
+  device?: FakeDevice;
+  accessory?: NativeAccessory;
+  protocol?: string;
+}
+
+interface FakeConnection {
+  id: string;
+  targetKey: string;
+  state: 'connecting' | 'connected' | 'disconnecting' | 'disconnected';
+  connectedAt: number;
+  device?: FakeDevice;
+  accessory?: NativeAccessory;
+  protocol?: string;
+  seq: number;
+  written: number[];
+  writeChain: Promise<void>;
+  disconnecting: Promise<void> | null;
+  stalledWrites: Set<(error: Error) => void>;
+}
+
+interface PendingOperation {
+  cancelCode: string;
+  reject: (error: Error) => void;
+  timers: ReturnType<typeof setTimeout>[];
+}
+
 const SCAN = 'BLUETOOTH_SCAN';
 const CONNECT = 'BLUETOOTH_CONNECT';
 const FINE = 'ACCESS_FINE_LOCATION';
@@ -170,6 +200,15 @@ export class FakeNativeModule implements Spec {
   private readonly pairings = new Map<string, PendingPairing>();
   private pendingEnable: Promise<void> | null = null;
   private nextAccessoryId = 1;
+  private nextConnectionId = 1;
+  private readonly connections = new Map<string, FakeConnection>();
+  private readonly connectingTargets = new Set<string>();
+  private readonly operations = new Map<string, PendingOperation>();
+  private pendingAccept: {
+    operationId: string;
+    resolve: (connection: FakeConnection) => void;
+    reject: (error: Error) => void;
+  } | null = null;
 
   constructor(platform: FakePlatform = { os: 'android', apiLevel: 36 }) {
     this.platform = platform;
@@ -228,6 +267,29 @@ export class FakeNativeModule implements Spec {
           'Bluetooth was turned off'
         )
       );
+    }
+    if (state !== 'on' && this.platform.os === 'android') {
+      for (const [operationId, operation] of Array.from(this.operations)) {
+        this.operations.delete(operationId);
+        operation.timers.forEach(clearTimeout);
+        if (this.pendingAccept?.operationId === operationId) {
+          this.pendingAccept = null;
+        }
+        operation.reject(
+          nativeRejection(
+            ErrorCode.BLUETOOTH_DISABLED,
+            'Bluetooth was turned off'
+          )
+        );
+      }
+      for (const connection of Array.from(this.connections.values())) {
+        this.terminate(
+          connection,
+          'error',
+          ErrorCode.BLUETOOTH_DISABLED,
+          'Bluetooth was turned off'
+        );
+      }
     }
   }
 
@@ -606,7 +668,7 @@ export class FakeNativeModule implements Spec {
   }
 
   // ---------------------------------------------------------------------
-  // Spec: connections (implemented by task group 3)
+  // Spec: connections
   // ---------------------------------------------------------------------
 
   async connect(
@@ -615,7 +677,106 @@ export class FakeNativeModule implements Spec {
     options: NativeConnectOptions
   ): Promise<NativeConnection> {
     this.begin('connect', [operationId, deviceId, options]);
-    throw this.notEmulated('connect');
+    if (this.platform.os === 'android') {
+      this.requireAdapter('connect');
+    }
+    const target = this.connectTarget(deviceId, options);
+    const existing = Array.from(this.connections.values()).find(
+      (connection) =>
+        connection.targetKey === target.key &&
+        connection.state !== 'disconnected'
+    );
+    if (existing !== undefined) {
+      throw nativeRejection(ErrorCode.ALREADY_CONNECTED, 'Already connected', {
+        deviceId,
+        connectionId: existing.id,
+      });
+    }
+    if (this.connectingTargets.has(target.key)) {
+      throw nativeRejection(
+        ErrorCode.ALREADY_CONNECTING,
+        'Already connecting',
+        { deviceId }
+      );
+    }
+    if (this.platform.os === 'android') {
+      this.finishDiscovery();
+    }
+    const response = this.connectResponses.get(deviceId) ?? 'accept';
+    this.connectingTargets.add(target.key);
+    return new Promise<NativeConnection>((resolve, reject) => {
+      const operation: PendingOperation = {
+        cancelCode: ErrorCode.CONNECT_CANCELLED,
+        reject: (error) => {
+          this.connectingTargets.delete(target.key);
+          reject(error);
+        },
+        timers: [],
+      };
+      this.operations.set(operationId, operation);
+      const settle = (body: () => void) => {
+        if (this.operations.get(operationId) !== operation) return;
+        this.operations.delete(operationId);
+        operation.timers.forEach(clearTimeout);
+        this.connectingTargets.delete(target.key);
+        body();
+      };
+      operation.timers.push(
+        setTimeout(
+          () =>
+            settle(() =>
+              reject(
+                nativeRejection(
+                  ErrorCode.CONNECT_TIMEOUT,
+                  'Connect timed out',
+                  {
+                    deviceId,
+                  }
+                )
+              )
+            ),
+          options.timeoutMs
+        )
+      );
+      if (response === 'hang') {
+        return;
+      }
+      operation.timers.push(
+        setTimeout(
+          () =>
+            settle(() => {
+              if (response === 'fail') {
+                reject(
+                  nativeRejection(
+                    ErrorCode.CONNECT_FAILED,
+                    'Connection refused',
+                    {
+                      deviceId,
+                      nativeCode: 'IOException',
+                      nativeMessage:
+                        'read failed, socket might closed or timeout',
+                    }
+                  )
+                );
+                return;
+              }
+              if (response === 'sessionFail') {
+                reject(
+                  nativeRejection(
+                    ErrorCode.SESSION_OPEN_FAILED,
+                    'The OS returned no session'
+                  )
+                );
+                return;
+              }
+              const connection = this.openConnection(target);
+              this.onConnectionOpened?.(connection.id);
+              resolve(this.toNativeConnection(connection));
+            }),
+          0
+        )
+      );
+    });
   }
 
   async accept(
@@ -623,34 +784,124 @@ export class FakeNativeModule implements Spec {
     options: NativeAcceptOptions
   ): Promise<NativeConnection> {
     this.begin('accept', [operationId, options]);
-    throw this.notEmulated('accept');
+    this.androidOnly();
+    this.requireAdapter('server');
+    if (this.pendingAccept !== null) {
+      throw nativeRejection(
+        ErrorCode.ACCEPT_ALREADY_RUNNING,
+        'Another accept is pending'
+      );
+    }
+    return new Promise<NativeConnection>((resolve, reject) => {
+      const operation: PendingOperation = {
+        cancelCode: ErrorCode.ACCEPT_CANCELLED,
+        reject: (error) => {
+          this.pendingAccept = null;
+          reject(error);
+        },
+        timers: [],
+      };
+      this.operations.set(operationId, operation);
+      const finish = () => {
+        this.operations.delete(operationId);
+        operation.timers.forEach(clearTimeout);
+        this.pendingAccept = null;
+      };
+      this.pendingAccept = {
+        operationId,
+        resolve: (connection) => {
+          finish();
+          resolve(this.toNativeConnection(connection));
+        },
+        reject: (error) => {
+          finish();
+          reject(error);
+        },
+      };
+      if (options.timeoutMs !== undefined) {
+        operation.timers.push(
+          setTimeout(
+            () =>
+              this.pendingAccept?.reject(
+                nativeRejection(ErrorCode.ACCEPT_TIMEOUT, 'No device connected')
+              ),
+            options.timeoutMs
+          )
+        );
+      }
+    });
   }
 
   async cancelOperation(operationId: string): Promise<void> {
     this.begin('cancelOperation', [operationId]);
+    const operation = this.operations.get(operationId);
+    if (operation === undefined) {
+      return;
+    }
+    this.operations.delete(operationId);
+    operation.timers.forEach(clearTimeout);
+    if (this.pendingAccept?.operationId === operationId) {
+      this.pendingAccept = null;
+    }
+    operation.reject(
+      nativeRejection(operation.cancelCode, 'The operation was cancelled')
+    );
   }
 
   async cancelAccept(): Promise<void> {
     this.begin('cancelAccept', []);
+    this.androidOnly();
+    this.pendingAccept?.reject(
+      nativeRejection(ErrorCode.ACCEPT_CANCELLED, 'The accept was cancelled')
+    );
   }
 
   async getConnections(): Promise<NativeConnection[]> {
     this.begin('getConnections', []);
-    return [];
+    return Array.from(this.connections.values())
+      .filter((connection) => connection.state !== 'disconnected')
+      .map((connection) => this.toNativeConnection(connection));
   }
 
-  async write(
-    connectionId: string,
-    data: string,
-    timeoutMs: number
-  ): Promise<void> {
-    this.begin('write', [connectionId, data, timeoutMs]);
-    throw this.notEmulated('write');
+  write(connectionId: string, data: string, timeoutMs: number): Promise<void> {
+    return this.run('write', [connectionId, data, timeoutMs], () => {
+      const connection = this.connections.get(connectionId);
+      if (connection === undefined || connection.state !== 'connected') {
+        throw nativeRejection(ErrorCode.NOT_CONNECTED, 'Not connected', {
+          connectionId,
+        });
+      }
+      const bytes = fromBase64(data);
+      const result = connection.writeChain.then(() =>
+        this.performWrite(connection, bytes, timeoutMs)
+      );
+      connection.writeChain = result.catch(() => {});
+      return result;
+    });
   }
 
   async disconnect(connectionId: string, timeoutMs: number): Promise<void> {
     this.begin('disconnect', [connectionId, timeoutMs]);
-    throw this.notEmulated('disconnect');
+    const connection = this.connections.get(connectionId);
+    if (connection === undefined || connection.state === 'disconnected') {
+      return;
+    }
+    if (connection.disconnecting !== null) {
+      return connection.disconnecting;
+    }
+    this.setConnectionState(connection, 'disconnecting');
+    connection.disconnecting = (async () => {
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      await Promise.race([
+        connection.writeChain,
+        new Promise<void>((resolve) => {
+          timer = setTimeout(resolve, timeoutMs);
+        }),
+      ]);
+      clearTimeout(timer);
+      this.terminate(connection, 'local');
+    })();
+    return connection.disconnecting;
   }
 
   async closeWithError(
@@ -659,7 +910,267 @@ export class FakeNativeModule implements Spec {
     message: string
   ): Promise<void> {
     this.begin('closeWithError', [connectionId, code, message]);
-    throw this.notEmulated('closeWithError');
+    const connection = this.connections.get(connectionId);
+    if (connection !== undefined) {
+      this.terminate(connection, 'error', code, message);
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Connection test controls
+  // ---------------------------------------------------------------------
+
+  /**
+   * How connect attempts behave per device id (upper-case address on
+   * Android, accessory id on iOS). The default is `'accept'`.
+   */
+  readonly connectResponses = new Map<
+    string,
+    'accept' | 'fail' | 'hang' | 'sessionFail'
+  >();
+  /** How writes behave: accepted, OS error, or never accepted. */
+  writeBehavior: 'accept' | 'fail' | 'stall' = 'accept';
+  /** Called right after a connection opens, before `connect()` resolves. */
+  onConnectionOpened: ((connectionId: string) => void) | undefined;
+
+  /** Simulates a remote device connecting to a pending `accept()`. */
+  incomingConnection(address: string): string {
+    const pending = this.pendingAccept;
+    if (pending === null) {
+      throw new Error('No accept() is pending');
+    }
+    const key = address.toUpperCase();
+    if (!this.devices.has(key)) {
+      this.addDevice({ address: key });
+    }
+    const connection = this.openConnection({
+      key,
+      device: this.devices.get(key)!,
+    });
+    pending.resolve(connection);
+    return connection.id;
+  }
+
+  /** Simulates bytes arriving from the remote device. */
+  pushData(connectionId: string, data: Uint8Array | string): void {
+    const connection = this.connections.get(connectionId);
+    if (connection === undefined || connection.state === 'disconnected') {
+      throw new Error(`Connection ${connectionId} is not open`);
+    }
+    const bytes = typeof data === 'string' ? encodeText(data, 'utf8') : data;
+    this.onData.emit({
+      connectionId,
+      data: toBase64(bytes),
+      seq: connection.seq++,
+    });
+  }
+
+  /** Simulates the remote device closing the link. */
+  remoteClose(connectionId: string): void {
+    const connection = this.connections.get(connectionId);
+    if (connection !== undefined) this.terminate(connection, 'remote');
+  }
+
+  /** Simulates the connection failing with `code`. */
+  failConnection(
+    connectionId: string,
+    code: string = ErrorCode.CONNECTION_LOST
+  ): void {
+    const connection = this.connections.get(connectionId);
+    if (connection !== undefined) {
+      this.terminate(connection, 'error', code, `Simulated ${code}`, {
+        nativeCode: 'IOException',
+        nativeMessage: 'Broken pipe',
+      });
+    }
+  }
+
+  /** Every byte written to the connection, in order. */
+  writtenBytes(connectionId: string): Uint8Array {
+    return Uint8Array.from(this.connections.get(connectionId)?.written ?? []);
+  }
+
+  private connectTarget(
+    deviceId: string,
+    options: NativeConnectOptions
+  ): ConnectTarget {
+    if (this.platform.os === 'android') {
+      const key = deviceId.toUpperCase();
+      const device = this.devices.get(key);
+      if (device === undefined) {
+        throw nativeRejection(ErrorCode.CONNECT_FAILED, 'Device unreachable', {
+          deviceId: key,
+          nativeCode: 'IOException',
+          nativeMessage: 'read failed, socket might closed or timeout',
+        });
+      }
+      return { key, device };
+    }
+    const accessory = this.accessories.get(deviceId);
+    if (accessory === undefined) {
+      throw nativeRejection(
+        ErrorCode.ACCESSORY_NOT_CONNECTED,
+        'The accessory is not connected',
+        { deviceId }
+      );
+    }
+    let protocol = options.protocol;
+    if (protocol !== undefined) {
+      if (!this.declaredProtocols.includes(protocol)) {
+        throw nativeRejection(
+          ErrorCode.PROTOCOL_NOT_DECLARED,
+          `${protocol} is not declared in UISupportedExternalAccessoryProtocols`
+        );
+      }
+      if (!accessory.protocolStrings.includes(protocol)) {
+        throw nativeRejection(
+          ErrorCode.PROTOCOL_NOT_SUPPORTED,
+          `The accessory does not support ${protocol}`
+        );
+      }
+    } else {
+      protocol = this.declaredProtocols.find((p) =>
+        accessory.protocolStrings.includes(p)
+      );
+      if (protocol === undefined) {
+        throw nativeRejection(
+          ErrorCode.PROTOCOL_NOT_SUPPORTED,
+          'The accessory supports none of the declared protocols'
+        );
+      }
+    }
+    return { key: `${deviceId}|${protocol}`, accessory, protocol };
+  }
+
+  private openConnection(target: ConnectTarget): FakeConnection {
+    const connection: FakeConnection = {
+      id: `conn-${this.nextConnectionId++}`,
+      targetKey: target.key,
+      state: 'connected',
+      connectedAt: Date.now(),
+      seq: 0,
+      written: [],
+      writeChain: Promise.resolve(),
+      disconnecting: null,
+      stalledWrites: new Set(),
+    };
+    if (target.device !== undefined) connection.device = target.device;
+    if (target.accessory !== undefined) connection.accessory = target.accessory;
+    if (target.protocol !== undefined) connection.protocol = target.protocol;
+    this.connections.set(connection.id, connection);
+    return connection;
+  }
+
+  private async performWrite(
+    connection: FakeConnection,
+    bytes: Uint8Array,
+    timeoutMs: number
+  ): Promise<void> {
+    if (connection.state === 'disconnected') {
+      throw nativeRejection(ErrorCode.NOT_CONNECTED, 'Not connected', {
+        connectionId: connection.id,
+      });
+    }
+    switch (this.writeBehavior) {
+      case 'accept':
+        connection.written.push(...bytes);
+        return;
+      case 'fail':
+        this.terminate(
+          connection,
+          'error',
+          ErrorCode.WRITE_FAILED,
+          'Broken pipe'
+        );
+        throw nativeRejection(ErrorCode.WRITE_FAILED, 'Broken pipe', {
+          connectionId: connection.id,
+        });
+      case 'stall':
+        await new Promise<void>((_resolve, reject) => {
+          let timer: ReturnType<typeof setTimeout> | undefined;
+          const stalled = (error: Error) => {
+            clearTimeout(timer);
+            connection.stalledWrites.delete(stalled);
+            reject(error);
+          };
+          connection.stalledWrites.add(stalled);
+          if (timeoutMs > 0) {
+            timer = setTimeout(() => {
+              stalled(
+                nativeRejection(ErrorCode.WRITE_TIMEOUT, 'Write timed out', {
+                  connectionId: connection.id,
+                })
+              );
+              this.terminate(
+                connection,
+                'error',
+                ErrorCode.WRITE_TIMEOUT,
+                'Write timed out'
+              );
+            }, timeoutMs);
+          }
+        });
+    }
+  }
+
+  private setConnectionState(
+    connection: FakeConnection,
+    state: FakeConnection['state'],
+    extra: Partial<NativeConnectionStateEvent> = {}
+  ): void {
+    const previousState = connection.state;
+    connection.state = state;
+    this.onConnectionStateChange.emit({
+      connectionId: connection.id,
+      state,
+      previousState,
+      timestamp: Date.now(),
+      ...extra,
+    });
+  }
+
+  private terminate(
+    connection: FakeConnection,
+    reason: 'local' | 'remote' | 'error',
+    errorCode?: string,
+    errorMessage?: string,
+    nativeInfo: { nativeCode?: string; nativeMessage?: string } = {}
+  ): void {
+    if (connection.state === 'disconnected') {
+      return;
+    }
+    const extra: Partial<NativeConnectionStateEvent> = {
+      reason,
+      ...nativeInfo,
+    };
+    if (errorCode !== undefined) extra.errorCode = errorCode;
+    if (errorMessage !== undefined) extra.errorMessage = errorMessage;
+    this.setConnectionState(connection, 'disconnected', extra);
+    for (const stalled of Array.from(connection.stalledWrites)) {
+      stalled(
+        nativeRejection(ErrorCode.NOT_CONNECTED, 'Not connected', {
+          connectionId: connection.id,
+        })
+      );
+    }
+  }
+
+  private toNativeConnection(connection: FakeConnection): NativeConnection {
+    const native: NativeConnection = {
+      id: connection.id,
+      state: connection.state,
+      connectedAt: connection.connectedAt,
+    };
+    if (connection.device !== undefined) {
+      native.androidDevice = this.toNative(connection.device);
+    }
+    if (connection.accessory !== undefined) {
+      native.accessory = connection.accessory;
+    }
+    if (connection.protocol !== undefined) {
+      native.protocol = connection.protocol;
+    }
+    return native;
   }
 
   // ---------------------------------------------------------------------
@@ -707,13 +1218,6 @@ export class FakeNativeModule implements Spec {
     if (this.platform.os !== 'ios') {
       throw nativeRejection(ErrorCode.UNSUPPORTED_ON_PLATFORM, 'iOS only');
     }
-  }
-
-  private notEmulated(method: string): Error {
-    return nativeRejection(
-      ErrorCode.UNSUPPORTED_ON_PLATFORM,
-      `${method} is not emulated by this fake yet`
-    );
   }
 
   private requireHardware(): void {

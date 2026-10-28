@@ -56,6 +56,7 @@ Every failure is a `BluetoothClassicError` with a `code`; see [docs/errors.md](.
 ## Documentation
 
 - [API reference](./docs/api.md)
+- [Connections and data](./docs/data.md)
 - [Error codes](./docs/errors.md)
 - [Migrating from v1](./docs/migration-v1-to-v2.md)
 
