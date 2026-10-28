@@ -18,6 +18,47 @@ Bluetooth Classic serial (RFCOMM/SPP) on Android and MFi ExternalAccessory sessi
 
 Windows, macOS, web, Expo Go and Bluetooth Low Energy are not supported.
 
+## Install
+
+```sh
+yarn add react-native-bluetooth-classic
+cd ios && pod install
+```
+
+Rebuild the app after installing. Expo apps need a development build (Expo Go is not supported); the bundled config plugin is planned (task group 8).
+
+## Quick start
+
+```ts
+import {
+  ErrorCode,
+  getBondedDevices,
+  getCapabilities,
+  isBluetoothClassicError,
+  requestEnable,
+  requestPermissions,
+} from 'react-native-bluetooth-classic';
+
+if (getCapabilities().pairing) {
+  await requestPermissions('connect');
+  try {
+    const devices = await getBondedDevices();
+  } catch (error) {
+    if (isBluetoothClassicError(error, ErrorCode.BLUETOOTH_DISABLED)) {
+      await requestEnable();
+    }
+  }
+}
+```
+
+Every failure is a `BluetoothClassicError` with a `code`; see [docs/errors.md](./docs/errors.md).
+
+## Documentation
+
+- [API reference](./docs/api.md)
+- [Error codes](./docs/errors.md)
+- [Migrating from v1](./docs/migration-v1-to-v2.md)
+
 ## Plan
 
 The rework is specified with [OpenSpec](https://github.com/Fission-AI/OpenSpec) in [`openspec/changes/rework-v2-new-architecture`](./openspec/changes/rework-v2-new-architecture):

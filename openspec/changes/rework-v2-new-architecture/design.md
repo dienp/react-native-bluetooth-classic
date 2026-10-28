@@ -135,6 +135,7 @@ See `proposal.md` → Why for the v1 defects, and `specs/` for the required beha
     - `ConnectionManager`.
   - `ConnectionManager` owns one `RfcommConnection` per `connectionId`. Each `RfcommConnection` has a dedicated daemon read thread, a single-thread write executor and an `AtomicReference<State>` that changes only through `compareAndSet`.
 - **Timeouts and cancellation:** a shared `ScheduledExecutorService` runs timeouts. A timeout or cancellation closes the socket, because that is the only way to unblock `connect()`, `read()` or `accept()`.
+- **Precondition order:** every operation checks Bluetooth hardware (`BLUETOOTH_UNAVAILABLE`), then the permissions of its scope (`PERMISSION_DENIED`), then that the adapter is on (`BLUETOOTH_DISABLED`), then Location Services for discovery on API 24–30 (`LOCATION_SERVICES_DISABLED`). The Jest fake follows the same order.
 - **Teardown:** the module's `invalidate()` closes everything.
 - **Ending a connection:**
   - Callbacks carry `connectionId`, and the manager ignores any id that is no longer current.

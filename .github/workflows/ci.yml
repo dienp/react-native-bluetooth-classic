@@ -32,6 +32,9 @@ jobs:
       - name: Typecheck files
         run: yarn typecheck
 
+      - name: Check generated error codes
+        run: yarn errors:check
+
       - name: Validate OpenSpec changes
         run: yarn openspec:validate
 
