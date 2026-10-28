@@ -1,5 +1,5 @@
 {
-  "name": "react-native-bluetooth-classic",
+  "name": "@dynlabs/react-native-bluetooth-classic",
   "version": "2.0.0-alpha.0",
   "description": "Bluetooth Classic (RFCOMM/SPP) on Android and MFi ExternalAccessory sessions on iOS for React Native's new architecture",
   "main": "./lib/module/index.js",
@@ -58,7 +58,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kenjdavidson/react-native-bluetooth-classic.git"
+    "url": "git+https://github.com/dienp/react-native-bluetooth-classic.git"
   },
   "author": "Kenneth Davidson <ken.j.davidson@live.ca> (https://github.com/kenjdavidson)",
   "contributors": [
@@ -74,11 +74,12 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/kenjdavidson/react-native-bluetooth-classic/issues"
+    "url": "https://github.com/dienp/react-native-bluetooth-classic/issues"
   },
-  "homepage": "https://github.com/kenjdavidson/react-native-bluetooth-classic#readme",
+  "homepage": "https://github.com/dienp/react-native-bluetooth-classic#readme",
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "devDependencies": {
     "@eslint/compat": "^2.1.1",

@@ -1,6 +1,16 @@
 # Migrating from v1 to v2
 
-v2 is a rewrite. Every app needs code changes. If you cannot meet the new requirements, stay on v1 (`react-native-bluetooth-classic@1`, maintained on the [`1.x` branch](https://github.com/kenjdavidson/react-native-bluetooth-classic/tree/1.x)).
+v2 is a rewrite, published as a new package: **`@dynlabs/react-native-bluetooth-classic`**. Every app needs code changes. If you cannot meet the new requirements, stay on v1 (`react-native-bluetooth-classic@1`, maintained on the [`1.x` branch](https://github.com/dienp/react-native-bluetooth-classic/tree/1.x)).
+
+## Switching packages
+
+```sh
+yarn remove react-native-bluetooth-classic
+yarn add @dynlabs/react-native-bluetooth-classic
+cd ios && pod install
+```
+
+Then replace `from 'react-native-bluetooth-classic'` with `from '@dynlabs/react-native-bluetooth-classic'` in your imports and rebuild the app. Do not keep both packages installed: they register the same native module name.
 
 ## Requirements
 

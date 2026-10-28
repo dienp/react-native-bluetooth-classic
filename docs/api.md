@@ -3,7 +3,7 @@
 > v2 is in development. This page covers the APIs implemented in the JavaScript layer so far; connections and data transfer are added by the next task group. The native modules are still stubs that reject with `UNSUPPORTED_ON_PLATFORM`.
 
 ```ts
-import * as BluetoothClassic from 'react-native-bluetooth-classic';
+import * as BluetoothClassic from '@dynlabs/react-native-bluetooth-classic';
 ```
 
 ## Conventions

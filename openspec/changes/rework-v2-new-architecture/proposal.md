@@ -2,7 +2,7 @@
 
 ## Why
 
-v1 (1.73.x) is a legacy-bridge module whose behavior is hard to predict. It has no typed error contract, and the same call behaves differently on each platform. Several promises can hang forever and several paths crash the app. React Native 0.82+ runs only the new architecture, and Google Play now requires apps to target API 36. Patching v1 further will not make it reliable, so we rebuild it as **v2.0.0**: TurboModule-only, with a small, typed and spec-defined surface.
+v1 (1.73.x) is a legacy-bridge module whose behavior is hard to predict. It has no typed error contract, and the same call behaves differently on each platform. Several promises can hang forever and several paths crash the app. React Native 0.82+ runs only the new architecture, and Google Play now requires apps to target API 36. Patching v1 further will not make it reliable, so we rebuild it as **v2.0.0**: TurboModule-only, with a small, typed and spec-defined surface. It is published as a new npm package, **`@dynlabs/react-native-bluetooth-classic`**, and the v1 package `react-native-bluetooth-classic` stays as it is.
 
 Representative v1 defects (from a code audit of `src/`, `android/` and `ios/`):
 
@@ -64,7 +64,8 @@ Representative v1 defects (from a code audit of `src/`, `android/` and `ios/`):
 - New capability discovery (`getCapabilities()`) and permission helpers per Android API band.
 - An Expo config plugin and a Jest mock for consumers.
 - A new build and release pipeline: builder-bob packaging, an example app, PR CI on RN 0.82 and the latest RN, and release candidates on the `next` dist-tag.
-- v1 continues on a `1.x` branch under the `legacy` npm dist-tag. A v1 → v2 migration guide covers every v1 API.
+- **BREAKING** The package is renamed to `@dynlabs/react-native-bluetooth-classic` (published under the `@dynlabs` npm scope). Apps replace the dependency and their imports.
+- v1 continues unchanged as `react-native-bluetooth-classic` on npm, maintained on the `1.x` branch. A v1 → v2 migration guide covers every v1 API and the package switch.
 
 ### Out of scope
 
@@ -102,8 +103,9 @@ None. There are no existing specs.
   - Deleted: `windows/`, the stale `ios/RNBluetoothClassic.xcodeproj` and the committed Eclipse files.
   - Added: `example/`, `app.plugin.js`, `jest/` (mock entry) and `src/specs/NativeBluetoothClassic.ts`.
 - **Package**:
+  - Published as `@dynlabs/react-native-bluetooth-classic` (public, `@dynlabs` scope); the iOS pod is `dynlabs-react-native-bluetooth-classic`.
   - `package.json` gains `codegenConfig` and an `exports` map, and peerDependencies become `react-native >= 0.82`.
   - The `buffer` dependency is removed.
   - The podspec uses `install_modules_dependencies` and iOS 15.1. Android uses Kotlin, the new DSL and `minSdk 24`.
-- **Consumers**: every app must migrate (guide provided). Apps on RN < 0.82, Android < 7.0, iOS < 15.1 or Windows stay on v1.
+- **Consumers**: every app must migrate (guide provided), including switching the dependency from `react-native-bluetooth-classic` to `@dynlabs/react-native-bluetooth-classic`. Apps on RN < 0.82, Android < 7.0, iOS < 15.1 or Windows stay on v1.
 - **Docs, CI and release**: the docs are rewritten (API, per-API-band platform guide, troubleshooting by error code, migration). The workflows and issue templates are replaced. Release candidates publish under `next`.

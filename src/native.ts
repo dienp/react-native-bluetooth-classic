@@ -16,14 +16,14 @@ export function getNativeModule(): Spec {
   if (hostPlatform() === 'other') {
     throw new BluetoothClassicError(
       ErrorCode.UNSUPPORTED_ON_PLATFORM,
-      'react-native-bluetooth-classic supports Android and iOS only'
+      '@dynlabs/react-native-bluetooth-classic supports Android and iOS only'
     );
   }
   const module = override !== undefined ? override : NativeBluetoothClassic;
   if (module == null) {
     throw new BluetoothClassicError(
       ErrorCode.MODULE_NOT_LINKED,
-      "The native module 'RNBluetoothClassic' is not linked. Rebuild the app after installing react-native-bluetooth-classic. Expo Go is not supported; use a development build."
+      "The native module 'RNBluetoothClassic' is not linked. Rebuild the app after installing @dynlabs/react-native-bluetooth-classic. Expo Go is not supported; use a development build."
     );
   }
   return module;

@@ -96,6 +96,6 @@ class BluetoothClassicModule(reactContext: ReactApplicationContext) :
   companion object {
     const val NAME = NativeBluetoothClassicSpec.NAME
     private const val NOT_IMPLEMENTED_MESSAGE =
-      "Not implemented yet in this react-native-bluetooth-classic v2 pre-release"
+      "Not implemented yet in this @dynlabs/react-native-bluetooth-classic v2 pre-release"
   }
 }

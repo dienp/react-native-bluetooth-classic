@@ -4,7 +4,7 @@
 #import <UIKit/UIKit.h>
 
 static NSString *const RNBCNotImplementedMessage =
-    @"Not implemented yet in this react-native-bluetooth-classic v2 pre-release";
+    @"Not implemented yet in this @dynlabs/react-native-bluetooth-classic v2 pre-release";
 
 // Pre-release stub. Reports every capability as unavailable and rejects every
 // operation with UNSUPPORTED_ON_PLATFORM until the iOS implementation (task

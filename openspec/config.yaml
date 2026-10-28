@@ -1,7 +1,7 @@
 schema: spec-driven
 
 context: |
-  Product: react-native-bluetooth-classic, a React Native library for Bluetooth Classic
+  Product: @dynlabs/react-native-bluetooth-classic on npm (successor of the v1 package react-native-bluetooth-classic), a React Native library for Bluetooth Classic
   serial (RFCOMM/SPP) on Android and MFi ExternalAccessory sessions on iOS.
 
   Support matrix (v2.x) - every artifact must respect it:

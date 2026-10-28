@@ -7,7 +7,7 @@ import {
   getConnectedAccessories,
   isBluetoothClassicError,
   requestPermissions,
-} from 'react-native-bluetooth-classic';
+} from '@dynlabs/react-native-bluetooth-classic';
 
 type Result = { label: string; value: unknown };
 
@@ -37,7 +37,7 @@ export default function App() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>react-native-bluetooth-classic</Text>
+      <Text style={styles.title}>@dynlabs/react-native-bluetooth-classic</Text>
       <Text style={styles.heading}>Capabilities</Text>
       <Text selectable style={styles.code}>
         {JSON.stringify(capabilities, null, 2)}

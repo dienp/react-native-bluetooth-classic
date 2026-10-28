@@ -1,11 +1,11 @@
-# react-native-bluetooth-classic
+# @dynlabs/react-native-bluetooth-classic
 
 Bluetooth Classic serial (RFCOMM/SPP) on Android and MFi ExternalAccessory sessions on iOS, for React Native's new architecture.
 
 > [!WARNING]
 > **Version 2 is under active development** and is not ready for production use. The API is being rebuilt as a TurboModule, and the native implementations are still stubs.
 >
-> **v1** (`1.73.x`) is maintained on the [`1.x` branch](https://github.com/kenjdavidson/react-native-bluetooth-classic/tree/1.x). Use v1 if you need the legacy architecture, React Native below 0.82, or Windows.
+> This is the successor of [`react-native-bluetooth-classic`](https://www.npmjs.com/package/react-native-bluetooth-classic), published under a new name. **v1** (`react-native-bluetooth-classic@1.73.x`) is maintained on the [`1.x` branch](https://github.com/dienp/react-native-bluetooth-classic/tree/1.x). Use v1 if you need the legacy architecture, React Native below 0.82, or Windows.
 
 ## Support matrix (v2)
 
@@ -21,7 +21,7 @@ Windows, macOS, web, Expo Go and Bluetooth Low Energy are not supported.
 ## Install
 
 ```sh
-yarn add react-native-bluetooth-classic
+yarn add @dynlabs/react-native-bluetooth-classic
 cd ios && pod install
 ```
 
@@ -37,7 +37,7 @@ import {
   isBluetoothClassicError,
   requestEnable,
   requestPermissions,
-} from 'react-native-bluetooth-classic';
+} from '@dynlabs/react-native-bluetooth-classic';
 
 if (getCapabilities().pairing) {
   await requestPermissions('connect');

@@ -6,7 +6,7 @@ import {
   requestEnable,
   requestPermissions,
   type AndroidDevice,
-} from 'react-native-bluetooth-classic';
+} from '@dynlabs/react-native-bluetooth-classic';
 
 /** Lists bonded devices on Android, asking for permissions and Bluetooth first. */
 export async function listBondedDevices(): Promise<AndroidDevice[]> {

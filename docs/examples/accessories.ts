@@ -4,7 +4,7 @@ import {
   onAccessoryConnected,
   showAccessoryPicker,
   type IosAccessory,
-} from 'react-native-bluetooth-classic';
+} from '@dynlabs/react-native-bluetooth-classic';
 
 /** iOS: returns a connected MFi accessory, showing the system picker if none is connected. */
 export async function pickAccessory(): Promise<IosAccessory | null> {
