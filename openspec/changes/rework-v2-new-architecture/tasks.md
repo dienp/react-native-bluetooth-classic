@@ -4,15 +4,15 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
 
 ## 1. Repository reset and tooling
 
-- [ ] 1.1 Create and push a `1.x` branch from the current `main` (`1.73.0-rc.17`). Verify `git ls-remote origin 1.x` returns the commit.
+- [x] 1.1 Create and push a `1.x` branch from the current `main` (`1.73.0-rc.17`). Verify `git ls-remote origin 1.x` returns the commit.
 - [ ] 1.2 Point the npm `legacy` dist-tag at the latest 1.x release (maintainer action). Verify `npm dist-tag ls react-native-bluetooth-classic` shows `legacy`.
-- [ ] 1.3 Delete the v1 implementation:
+- [x] 1.3 Delete the v1 implementation:
   - `src/`, `__tests__/`, `android/src/`, `ios/` and `windows/`
   - `ios/RNBluetoothClassic.xcodeproj`, the Eclipse files and the Gatsby `docs/` site
   - `.npmignore`, `ttypescript`, `ts-auto-mock` and the `buffer` dependency
 
   Verify `git ls-files` lists none of them.
-- [ ] 1.4 Scaffold the JS package with react-native-builder-bob:
+- [x] 1.4 Scaffold the JS package with react-native-builder-bob:
   - `package.json`: `exports` map (`source`, `react-native`, `types`, `default`, plus `./jest` and `./app.plugin.js`), `peerDependencies` `react-native >=0.82` and `react`, `sideEffects: false`
   - strict `tsconfig`, ESLint, Prettier, and Jest with the React Native preset
 
@@ -24,12 +24,12 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
 
   Verify the example app's merged manifest (`./gradlew :app:processDebugMainManifest`) contains exactly those entries.
 - [ ] 1.6 Scaffold the iOS pod: `install_modules_dependencies(s)`, `min_ios_version_supported`, `s.frameworks = 'ExternalAccessory'`, `swift_version '5.9'`. Verify `pod install` and an `xcodebuild` of the example succeed.
-- [ ] 1.7 Create `example/` on the latest React Native, plus `scripts/set-rn-version.sh <version>` to switch it to RN 0.82. Verify the example builds for Android and iOS on both versions.
+- [ ] 1.7 Create `example/` on the latest React Native, plus `scripts/ci/build-test-app.sh <version> <platform>`, which builds a freshly generated app at that React Native version (0.82.1 for the minimum lane) against the packed library. Verify the example and the RN 0.82 test app build for Android and iOS in CI.
 - [ ] 1.8 Replace `.github/workflows/*` with PR CI. Verify every job is green on the scaffold PR. The jobs are:
   - lint, typecheck, Jest, and `openspec validate --strict`
   - Android unit tests and an example build on the RN 0.82 and latest lanes
   - `pod install` and an example `xcodebuild` on the RN 0.82 and latest lanes
-- [ ] 1.9 Configure `release-it`: prereleases publish to the `next` dist-tag, GA to `latest`, and tags are `v`-prefixed. Verify `npx release-it --dry-run --preRelease=rc` prints `next`.
+- [x] 1.9 Configure `release-it`: prereleases publish to the `next` dist-tag, GA to `latest`, and tags are `v`-prefixed. Verify `npx release-it --dry-run --preRelease=rc` prints `next`.
 - [ ] 1.10 Rewrite `.github/ISSUE_TEMPLATE/bug_report.md` to ask for:
   - React Native version, OS and API level, device model
   - Expo yes/no, and the declared iOS protocols

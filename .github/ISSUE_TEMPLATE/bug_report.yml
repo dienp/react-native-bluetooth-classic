@@ -1,0 +1,102 @@
+name: 🐛 Bug report
+description: Report a reproducible bug or regression in react-native-bluetooth-classic.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Version 2 reports every failure as a `BluetoothClassicError` with a `code`.
+        Please include that code and the debug logs; without them most issues cannot be diagnosed.
+  - type: checkboxes
+    attributes:
+      label: Before submitting
+      options:
+        - label: I am using the latest release of this library.
+          required: true
+        - label: I am using React Native 0.82 or later (v1.x issues go to the `1.x` branch).
+          required: true
+        - label: I searched existing issues for duplicates.
+          required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Bug summary
+      description: What happened, and what did you expect to happen?
+    validations:
+      required: true
+  - type: input
+    id: library-version
+    attributes:
+      label: Library version
+      placeholder: "2.x.x"
+    validations:
+      required: true
+  - type: input
+    id: rn-version
+    attributes:
+      label: React Native version
+      placeholder: "0.88.1"
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options:
+        - Android
+        - iOS
+        - Both
+    validations:
+      required: true
+  - type: input
+    id: os-version
+    attributes:
+      label: OS version and device model
+      description: Android API level (for example API 31 / Android 12) or iOS version, plus the device model.
+      placeholder: "Android 14 (API 34), Zebra TC52"
+    validations:
+      required: true
+  - type: input
+    id: remote-device
+    attributes:
+      label: Remote device
+      description: The Bluetooth device you connect to (model, SPP or MFi accessory).
+    validations:
+      required: true
+  - type: dropdown
+    id: expo
+    attributes:
+      label: Expo
+      options:
+        - Not using Expo
+        - Expo development build
+    validations:
+      required: true
+  - type: input
+    id: ios-protocols
+    attributes:
+      label: iOS protocol strings (iOS only)
+      description: The values of UISupportedExternalAccessoryProtocols in Info.plist.
+  - type: textarea
+    id: error
+    attributes:
+      label: Error details
+      description: The error `code`, `message`, `nativeCode` and `nativeMessage` (for example the output of `JSON.stringify(error)`).
+      render: json
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Debug logs
+      description: Logs captured after calling `setLogLevel('debug')` (logcat or the Xcode console). Remove any sensitive payloads.
+      render: shell
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1. …
+        2. …
+    validations:
+      required: true
