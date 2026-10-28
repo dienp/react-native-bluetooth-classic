@@ -7,7 +7,7 @@ Lets Expo apps that use development builds configure the native permissions, Inf
 ## ADDED Requirements
 
 ### Requirement: Plugin registration
-The package SHALL ship an Expo config plugin that is resolved when `'react-native-bluetooth-classic'` appears in the app config's `plugins` list. It SHALL work with `expo prebuild` and with EAS Build. The documentation SHALL state that Expo Go is not supported. In Expo Go, API calls fail as specified for a missing native module.
+The package SHALL ship an Expo config plugin that is resolved when `'@dynlabs/react-native-bluetooth-classic'` appears in the app config's `plugins` list. It SHALL work with `expo prebuild` and with EAS Build. The documentation SHALL state that Expo Go is not supported. In Expo Go, API calls fail as specified for a missing native module.
 
 #### Scenario: Prebuild with defaults
 - **WHEN** an Expo app adds the plugin without options and runs `expo prebuild`

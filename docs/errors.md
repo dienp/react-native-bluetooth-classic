@@ -6,7 +6,7 @@ Every failure is a `BluetoothClassicError` with one of these `code` values, on b
 Compare against the exported `ErrorCode` constants:
 
 ```ts
-import { ErrorCode, isBluetoothClassicError } from 'react-native-bluetooth-classic';
+import { ErrorCode, isBluetoothClassicError } from '@dynlabs/react-native-bluetooth-classic';
 
 try {
   await connect(address);

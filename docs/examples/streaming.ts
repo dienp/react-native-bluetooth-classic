@@ -3,7 +3,7 @@ import {
   delimiter,
   type Connection,
   type Framer,
-} from 'react-native-bluetooth-classic';
+} from '@dynlabs/react-native-bluetooth-classic';
 
 /** Logs every NMEA sentence from a GPS receiver until the connection ends. */
 export async function logNmea(deviceId: string): Promise<void> {

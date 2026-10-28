@@ -2,7 +2,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "react-native-bluetooth-classic": [
+      "@dynlabs/react-native-bluetooth-classic": [
         "./src/index"
       ]
     },

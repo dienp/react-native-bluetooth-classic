@@ -10,7 +10,7 @@ const ORDER: Record<LogLevel, number> = {
 
 export const LOG_LEVELS = Object.keys(ORDER) as readonly LogLevel[];
 
-const PREFIX = '[react-native-bluetooth-classic]';
+const PREFIX = '[@dynlabs/react-native-bluetooth-classic]';
 
 let level: LogLevel = 'warn';
 

@@ -16,7 +16,7 @@ The library SHALL support React Native 0.82 and every later release up to the la
 #### Scenario: Install into an unsupported app
 - **WHEN** the package is installed into an app on React Native 0.81 or earlier
 - **THEN** the package manager reports the `react-native >=0.82` peer dependency mismatch
-- **AND** the documentation states that such apps must stay on v1.x
+- **AND** the documentation states that such apps must stay on v1.x of the `react-native-bluetooth-classic` package
 
 ### Requirement: Supported Android versions
 The Android library SHALL declare `minSdkVersion` 24 (Android 7.0). It SHALL behave as specified on every Android release from API 24 through API 37. Where the specs describe behavior that varies by OS release, they name the API band.

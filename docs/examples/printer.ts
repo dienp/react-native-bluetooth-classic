@@ -3,7 +3,7 @@ import {
   connect,
   delimiter,
   isBluetoothClassicError,
-} from 'react-native-bluetooth-classic';
+} from '@dynlabs/react-native-bluetooth-classic';
 
 /** Sends an ESC/POS receipt to a paired Android printer, then disconnects. */
 export async function printReceipt(

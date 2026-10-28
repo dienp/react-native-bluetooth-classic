@@ -261,7 +261,7 @@ describe('inbound stream', () => {
     connection.onData(() => {});
     fake.onData.emit({ connectionId: connection.id, data: 'AA==', seq: 5 });
     expect(error).toHaveBeenCalledWith(
-      '[react-native-bluetooth-classic]',
+      '[@dynlabs/react-native-bluetooth-classic]',
       expect.stringContaining('sequence gap')
     );
   });

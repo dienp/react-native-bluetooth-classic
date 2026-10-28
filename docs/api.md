@@ -3,7 +3,7 @@
 > v2 is in development. The JavaScript layer described here is implemented and tested; the native modules are still stubs that reject with `UNSUPPORTED_ON_PLATFORM`.
 
 ```ts
-import * as BluetoothClassic from 'react-native-bluetooth-classic';
+import * as BluetoothClassic from '@dynlabs/react-native-bluetooth-classic';
 ```
 
 ## Conventions

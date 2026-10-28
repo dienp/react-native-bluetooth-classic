@@ -7,7 +7,7 @@ import {
   requestPermissions,
   startDiscovery,
   type AndroidDevice,
-} from 'react-native-bluetooth-classic';
+} from '@dynlabs/react-native-bluetooth-classic';
 
 /** Runs a 10 second discovery session on Android, streaming results to `onFound`. */
 export async function discover(

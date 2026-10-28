@@ -69,7 +69,7 @@ describe('typed event subscriptions', () => {
 
     expect(healthy).toHaveBeenCalledTimes(1);
     expect(consoleError).toHaveBeenCalledWith(
-      '[react-native-bluetooth-classic]',
+      '[@dynlabs/react-native-bluetooth-classic]',
       'A listener for onAdapterStateChange threw:',
       expect.any(Error)
     );

@@ -191,6 +191,7 @@ See `proposal.md` → Why for the v1 defects, and `specs/` for the required beha
 
 ### D12. Packaging and build
 - **JS package:**
+  - Name `@dynlabs/react-native-bluetooth-classic`, published with public access under the `@dynlabs` scope. The version continues the library's lineage at 2.x.
   - Layout from `create-react-native-library` and `react-native-builder-bob`: `src/` is built to `lib/module` and `lib/typescript`.
   - `package.json` has an `exports` map with `source`, `react-native`, `types` and `default` conditions, plus the `./jest` and `./app.plugin.js` entries.
   - `sideEffects: false`.
@@ -200,7 +201,7 @@ See `proposal.md` → Why for the v1 defects, and `specs/` for the required beha
   - `compileSdk`, `minSdk` and `targetSdk` are read from the root project, defaulting to 36/24/36.
   - JVM 17, and the `com.facebook.react` plugin for codegen.
   - No hard-coded `react-native` artifact version.
-- **iOS:** the podspec uses `install_modules_dependencies(s)`, `min_ios_version_supported` (15.1), `s.frameworks = 'ExternalAccessory'` and `swift_version 5.9`.
+- **iOS:** the pod is `dynlabs-react-native-bluetooth-classic` (CocoaPods names cannot contain the npm scope). The podspec uses `install_modules_dependencies(s)`, `min_ios_version_supported` (15.1), `s.frameworks = 'ExternalAccessory'` and `swift_version 5.9`.
 - **Removed:** the stale `.xcodeproj`, the Eclipse files and `windows/`.
 - **Alternatives considered:**
   - *Keeping `tsc`-only output with no `exports` map*: no `source` condition for Metro, and no clean subpath exports.
@@ -216,7 +217,7 @@ See `proposal.md` → Why for the v1 defects, and `specs/` for the required beha
 ### D14. One fake powers JS tests and the public Jest mock
 - **Approach:**
   - `src/__fakes__/FakeNativeModule.ts` implements the codegen spec in memory, with platform and API-level emulation and controllable devices.
-  - The library's own Jest suite and the published `react-native-bluetooth-classic/jest` both use it, so the mock never drifts from the contract.
+  - The library's own Jest suite and the published `@dynlabs/react-native-bluetooth-classic/jest` both use it, so the mock never drifts from the contract.
   - Native tests:
     - Android: Robolectric shadows per API band, plus JVM tests against a `RfcommTransport` interface backed by piped streams.
     - iOS: XCTest against an `AccessoryTransport` protocol backed by bound stream pairs.
@@ -233,7 +234,8 @@ See `proposal.md` → Why for the v1 defects, and `specs/` for the required beha
 - **Releases:**
   - Made with `release-it` from builder-bob's template.
   - Prereleases (`-rc.N`) are published to the `next` dist-tag, and only GA versions go to `latest`.
-  - v1 lives on the `1.x` branch under the `legacy` dist-tag.
+  - The package is published publicly under the `@dynlabs` npm scope as `@dynlabs/react-native-bluetooth-classic`.
+  - v1 stays published as `react-native-bluetooth-classic` and lives on the `1.x` branch.
 - **Alternatives considered:**
   - *Changesets*: fine, but it adds monorepo-oriented tooling to a single package.
   - *The existing manual workflows*: they are broken (Node 12, invalid runner labels, publishing release candidates to `latest`).
@@ -251,7 +253,7 @@ See `proposal.md` → Why for the v1 defects, and `specs/` for the required beha
 
 ## Migration Plan
 
-1. **Freeze v1.** Cut the `1.x` branch from the current `main` at `1.73.0-rc.17`, and move the npm `legacy` dist-tag to the last 1.x release. Critical fixes land on `1.x` only.
+1. **Freeze v1.** Cut the `1.x` branch from the current `main` at `1.73.0-rc.17`. v1 keeps its npm name, `react-native-bluetooth-classic`, so its existing users are unaffected. Critical fixes land on `1.x` only.
 2. **Build v2 on `main`.** Build in task-group order (see `tasks.md`). Each group is a PR with green CI. Publish `2.0.0-rc.N` to `next` once groups 1–6 are done.
 3. **Migration guide.** Publish it with the first release candidate, covering:
 
@@ -277,7 +279,7 @@ See `proposal.md` → Why for the v1 defects, and `specs/` for the required beha
 | `BluetoothError` enum, `EUNSPECIFIED`, lowercase iOS codes | `ErrorCode` + `BluetoothClassicError` |
 
 4. **GA.** Release 2.0.0 when the hardware matrix passes on the latest release candidate. Then archive this change (`openspec archive rework-v2-new-architecture`), which promotes the specs to `openspec/specs/`.
-5. **Rollback.** Apps pin `react-native-bluetooth-classic@1` (or `@legacy`). v2 makes no persistent on-device changes, so downgrading needs only a rebuild.
+5. **Rollback.** Apps switch back from `@dynlabs/react-native-bluetooth-classic` to `react-native-bluetooth-classic@1`. v2 makes no persistent on-device changes, so downgrading needs only a rebuild.
 
 ## Open Questions
 
