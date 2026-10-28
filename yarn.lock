@@ -1569,6 +1569,38 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@dynlabs/react-native-bluetooth-classic@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@dynlabs/react-native-bluetooth-classic@workspace:."
+  dependencies:
+    "@eslint/compat": "npm:^2.1.1"
+    "@eslint/eslintrc": "npm:^3.3.7"
+    "@eslint/js": "npm:^9.39.5"
+    "@fission-ai/openspec": "npm:1.15.0"
+    "@react-native/babel-preset": "npm:0.88.1"
+    "@react-native/eslint-config": "npm:0.88.1"
+    "@react-native/jest-preset": "npm:0.88.1"
+    "@release-it/conventional-changelog": "npm:^12.0.2"
+    "@types/jest": "npm:^30.0.0"
+    "@types/react": "npm:^19.2.0"
+    del-cli: "npm:^8.0.1"
+    eslint: "npm:^9.39.5"
+    eslint-config-prettier: "npm:^10.1.8"
+    eslint-plugin-ft-flow: "npm:^3.0.11"
+    eslint-plugin-prettier: "npm:^5.5.7"
+    jest: "npm:^30.5.2"
+    prettier: "npm:^3.9.10"
+    react: "npm:19.3.0"
+    react-native: "npm:0.88.1"
+    react-native-builder-bob: "npm:^0.44.1"
+    release-it: "npm:^21.1.1"
+    typescript: "npm:^6.0.3"
+  peerDependencies:
+    react: "*"
+    react-native: ">=0.82.0"
+  languageName: unknown
+  linkType: soft
+
 "@emnapi/core@npm:1.10.0":
   version: 1.10.0
   resolution: "@emnapi/core@npm:1.10.0"
@@ -9748,38 +9780,6 @@ __metadata:
     react-native: "npm:0.88.1"
     react-native-builder-bob: "npm:^0.44.1"
     react-native-monorepo-config: "npm:^0.4.0"
-  languageName: unknown
-  linkType: soft
-
-"react-native-bluetooth-classic@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "react-native-bluetooth-classic@workspace:."
-  dependencies:
-    "@eslint/compat": "npm:^2.1.1"
-    "@eslint/eslintrc": "npm:^3.3.7"
-    "@eslint/js": "npm:^9.39.5"
-    "@fission-ai/openspec": "npm:1.15.0"
-    "@react-native/babel-preset": "npm:0.88.1"
-    "@react-native/eslint-config": "npm:0.88.1"
-    "@react-native/jest-preset": "npm:0.88.1"
-    "@release-it/conventional-changelog": "npm:^12.0.2"
-    "@types/jest": "npm:^30.0.0"
-    "@types/react": "npm:^19.2.0"
-    del-cli: "npm:^8.0.1"
-    eslint: "npm:^9.39.5"
-    eslint-config-prettier: "npm:^10.1.8"
-    eslint-plugin-ft-flow: "npm:^3.0.11"
-    eslint-plugin-prettier: "npm:^5.5.7"
-    jest: "npm:^30.5.2"
-    prettier: "npm:^3.9.10"
-    react: "npm:19.3.0"
-    react-native: "npm:0.88.1"
-    react-native-builder-bob: "npm:^0.44.1"
-    release-it: "npm:^21.1.1"
-    typescript: "npm:^6.0.3"
-  peerDependencies:
-    react: "*"
-    react-native: ">=0.82.0"
   languageName: unknown
   linkType: soft
 

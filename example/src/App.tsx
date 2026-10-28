@@ -1,12 +1,12 @@
 import { ScrollView, StyleSheet, Text } from 'react-native';
-import { getCapabilities } from 'react-native-bluetooth-classic';
+import { getCapabilities } from '@dynlabs/react-native-bluetooth-classic';
 
 export default function App() {
   const capabilities = getCapabilities();
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>react-native-bluetooth-classic</Text>
+      <Text style={styles.title}>@dynlabs/react-native-bluetooth-classic</Text>
       <Text selectable>{JSON.stringify(capabilities, null, 2)}</Text>
     </ScrollView>
   );

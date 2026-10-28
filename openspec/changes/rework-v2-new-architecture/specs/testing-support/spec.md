@@ -7,10 +7,10 @@ Lets app developers unit-test code that uses the library without Bluetooth hardw
 ## ADDED Requirements
 
 ### Requirement: Jest mock entry point
-The package SHALL ship a mock at `react-native-bluetooth-classic/jest` that implements the full public API with the same TypeScript types, error class and error codes as the real module. Enabling it SHALL take one `jest.mock` line.
+The package SHALL ship a mock at `@dynlabs/react-native-bluetooth-classic/jest` that implements the full public API with the same TypeScript types, error class and error codes as the real module. Enabling it SHALL take one `jest.mock` line.
 
 #### Scenario: Enable the mock
-- **WHEN** a test file calls `jest.mock('react-native-bluetooth-classic', () => require('react-native-bluetooth-classic/jest'))`
+- **WHEN** a test file calls `jest.mock('@dynlabs/react-native-bluetooth-classic', () => require('@dynlabs/react-native-bluetooth-classic/jest'))`
 - **THEN** code under test can call every public API without native modules, and the calls type-check against the real declarations
 
 ### Requirement: Controllable fake devices

@@ -1,5 +1,5 @@
 name: 🐛 Bug report
-description: Report a reproducible bug or regression in react-native-bluetooth-classic.
+description: Report a reproducible bug or regression in @dynlabs/react-native-bluetooth-classic.
 labels: [bug]
 body:
   - type: markdown
@@ -13,7 +13,7 @@ body:
       options:
         - label: I am using the latest release of this library.
           required: true
-        - label: I am using React Native 0.82 or later (v1.x issues go to the `1.x` branch).
+        - label: I am using React Native 0.82 or later (issues with the v1 package `react-native-bluetooth-classic` go to the `1.x` branch).
           required: true
         - label: I searched existing issues for duplicates.
           required: true
