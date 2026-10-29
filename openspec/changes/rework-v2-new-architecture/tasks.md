@@ -25,7 +25,7 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
   Verify the example app's merged manifest (`./gradlew :app:processDebugMainManifest`) contains exactly those entries.
 - [x] 1.6 Scaffold the iOS pod: `install_modules_dependencies(s)`, `min_ios_version_supported`, `s.frameworks = 'ExternalAccessory'`, `swift_version '5.9'`. Verify `pod install` and an `xcodebuild` of the example succeed.
 - [x] 1.7 Create `example/` on the latest React Native, plus `scripts/ci/build-test-app.sh <version> <platform>`, which builds a freshly generated app at that React Native version (0.82.1 for the minimum lane) against the packed library. Verify the example and the RN 0.82 test app build for Android and iOS in CI.
-- [ ] 1.8 Replace `.github/workflows/*` with PR CI. Verify every job is green on the scaffold PR. The jobs are:
+- [x] 1.8 Replace `.github/workflows/*` with PR CI. Verify every job is green on the scaffold PR. The jobs are:
   - lint, typecheck, Jest, and `openspec validate --strict`
   - Android unit tests and an example build on the RN 0.82 and latest lanes
   - `pod install` and an example `xcodebuild` on the RN 0.82 and latest lanes
