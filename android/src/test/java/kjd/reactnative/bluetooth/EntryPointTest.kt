@@ -61,6 +61,8 @@ class EntryPointTest : ModuleTest() {
         prompt.listener?.onRequestPermissionsResult(prompt.requestCode, prompt.permissions.toTypedArray(), denied)
       }
       activity.prompts.clear()
+      // End a discovery session the call may have started.
+      module.cancelDiscovery(RecordingPromise())
       idle()
       assertEquals("$name settles exactly once", 1, promise.settleCount)
       if (!promise.resolved) {
@@ -120,7 +122,10 @@ class EntryPointTest : ModuleTest() {
     assertEquals(ErrorCode.UNSUPPORTED_ON_PLATFORM, picker.code)
     assertEquals("showAccessoryPicker() is only available on iOS", picker.message)
 
-    assertEquals(ErrorCode.UNSUPPORTED_ON_PLATFORM, call { module.startDiscovery(1_000.0, it) }.code)
+    assertEquals(
+      ErrorCode.UNSUPPORTED_ON_PLATFORM,
+      call { module.connect("op-3", "00:11:22:33:44:55", JavaOnlyMap.of("timeoutMs", 1_000.0), it) }.code
+    )
   }
 
   @Test

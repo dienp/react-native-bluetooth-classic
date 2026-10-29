@@ -21,11 +21,11 @@ class CapabilitiesTest : ModuleTest() {
     assertTrue(capabilities.getBoolean("requestEnable"))
     assertFalse(capabilities.getBoolean("accessoryPicker"))
     assertEquals(0, capabilities.getArray("declaredProtocols")!!.size())
-    // Discovery, pairing and the server have not landed on Android yet.
-    assertFalse(capabilities.getBoolean("discovery"))
-    assertFalse(capabilities.getBoolean("pairing"))
+    assertTrue(capabilities.getBoolean("discovery"))
+    assertTrue(capabilities.getBoolean("pairing"))
+    // The server has not landed on Android yet.
     assertFalse(capabilities.getBoolean("server"))
-    assertFalse(capabilities.getBoolean("bondLossEvents"))
+    assertEquals(sdkInt >= 36, capabilities.getBoolean("bondLossEvents"))
   }
 
   @Test

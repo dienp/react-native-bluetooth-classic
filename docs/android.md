@@ -2,7 +2,7 @@
 
 What the library needs from an Android app, and how it behaves on each Android release it supports (API 24–37).
 
-> Status: adapter state, permissions, `requestEnable()`, `openSettings()` and `setAdapterName()` are implemented natively. Discovery, pairing and connections still reject with `UNSUPPORTED_ON_PLATFORM`, and `getCapabilities()` reports them as `false` until they land.
+> Status: adapter state, permissions, `requestEnable()`, `openSettings()`, `setAdapterName()`, discovery, pairing and bond events are implemented natively. Connections still reject with `UNSUPPORTED_ON_PLATFORM`, and `getCapabilities().server` is `false` until they land.
 
 ## Permissions by API level
 
@@ -103,6 +103,50 @@ if (status.locationServicesEnabled === false) {
 }
 ```
 
+## Discovery
+
+`startDiscovery({ timeoutMs? })` runs one discovery session and resolves with every device it found. It needs the `'discovery'` scope, Bluetooth on and, on API 24–30, Location Services on.
+
+- **Results:** `onDeviceFound` fires at most once per address in a session. The resolved list has one entry per device, with the latest name and RSSI the OS reported. Only discovery results carry `rssi`.
+- **How a session ends:**
+  - The OS finishes it, after about 12 seconds.
+  - `timeoutMs` elapses. Without it, the session also stops after 120 seconds if the OS never reports that it finished.
+  - `cancelDiscovery()` stops it, and the pending `startDiscovery()` resolves with what was found so far.
+- **One session at a time:** a second `startDiscovery()` rejects with `DISCOVERY_ALREADY_RUNNING`, and the first session carries on. `cancelDiscovery()` with nothing running resolves without effect.
+- **Always settles:** the session runs on the application context, so pausing the app, a system dialog or going to the background doesn't stop it. Bluetooth turning off rejects it with `BLUETOOTH_DISABLED`. If the OS refuses to start, or never reports that discovery started (within 10 seconds), it rejects with `DISCOVERY_FAILED`.
+
+```ts
+const subscription = onDeviceFound(({ device }) => showDevice(device));
+try {
+  const devices = await startDiscovery({ timeoutMs: 10_000 });
+} finally {
+  subscription.remove();
+}
+```
+
+## Pairing
+
+`pair(address, { timeoutMs? })` starts bonding and resolves with the device once it reaches `'bonded'`. It needs the `'connect'` scope and Bluetooth on.
+
+- **System UI only:** the OS pairing dialog collects any PIN or passkey. The library never supplies or confirms one; it only watches the bond state of that address.
+- **Outcomes:**
+  - Already bonded: it resolves immediately.
+  - The OS refuses to start bonding: `PAIRING_FAILED`, immediately.
+  - Bonding ends in `'none'`, for example because the user declined: `PAIRING_FAILED`.
+  - No outcome within `timeoutMs` (default 60 seconds): `PAIRING_TIMEOUT`, after asking the OS to cancel the attempt.
+  - Bluetooth turns off: `BLUETOOTH_DISABLED`.
+- **One pairing per device:** a second `pair()` for the same address rejects with `PAIRING_IN_PROGRESS`. Different devices can pair at the same time.
+
+### Unpairing
+
+Android has no public API for removing a bond on any release, so `unpair(address)` calls the OS's hidden bond-removal method. Where the OS blocks it, `unpair()` rejects with `UNSUPPORTED_ON_PLATFORM`; send the user to the Bluetooth settings with `openSettings()` instead. When it works, it resolves once the device's bond state is `'none'`, and immediately if the device wasn't bonded.
+
+### Bond events
+
+`onBondStateChange` reports every bond transition of any device, `{ device, state, previousState }`. It works while the system pairing dialog covers the app, because the receiver lives on the application context.
+
+`onBondLost` fires on API 36 and later when the OS reports that a bonded device lost its keys, for example after a factory reset; `getCapabilities().bondLossEvents` is `true` there. On API 24–35 the subscription is accepted but never fires.
+
 ## Turning Bluetooth on
 
 `requestEnable()` shows the system "Turn on Bluetooth?" prompt:
@@ -129,7 +173,7 @@ if (permissions.granted && (await getAdapterState()) !== 'on') {
 
 ## Adapter state events
 
-`onAdapterStateChange` listens for system broadcasts on the application context, not the activity. It therefore keeps delivering transitions while the app is in the background or a system dialog covers it, as long as the JavaScript runtime is alive. When the runtime reloads, the library unregisters its receivers and drops pending requests, so nothing is delivered to the new runtime.
+`onAdapterStateChange` listens for system broadcasts on the application context, not the activity. It therefore keeps delivering transitions while the app is in the background or a system dialog covers it, as long as the JavaScript runtime is alive. When the runtime reloads, the library unregisters its receivers, stops discovery and drops pending requests, so nothing is delivered to the new runtime.
 
 ## Logging
 
