@@ -17,14 +17,14 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
   - strict `tsconfig`, ESLint, Prettier, and Jest with the React Native preset
 
   Verify `npm run typecheck && npm run lint && npm test` pass on the empty skeleton.
-- [ ] 1.5 Scaffold the Android library:
+- [x] 1.5 Scaffold the Android library:
   - Kotlin, new DSL, `namespace kjd.reactnative.bluetooth`
   - root-project SDK lookups with defaults compileSdk 36, minSdk 24, targetSdk 36; JVM 17; the `com.facebook.react` plugin
   - the manifest declarations from the `permissions` spec
 
   Verify the example app's merged manifest (`./gradlew :app:processDebugMainManifest`) contains exactly those entries.
-- [ ] 1.6 Scaffold the iOS pod: `install_modules_dependencies(s)`, `min_ios_version_supported`, `s.frameworks = 'ExternalAccessory'`, `swift_version '5.9'`. Verify `pod install` and an `xcodebuild` of the example succeed.
-- [ ] 1.7 Create `example/` on the latest React Native, plus `scripts/ci/build-test-app.sh <version> <platform>`, which builds a freshly generated app at that React Native version (0.82.1 for the minimum lane) against the packed library. Verify the example and the RN 0.82 test app build for Android and iOS in CI.
+- [x] 1.6 Scaffold the iOS pod: `install_modules_dependencies(s)`, `min_ios_version_supported`, `s.frameworks = 'ExternalAccessory'`, `swift_version '5.9'`. Verify `pod install` and an `xcodebuild` of the example succeed.
+- [x] 1.7 Create `example/` on the latest React Native, plus `scripts/ci/build-test-app.sh <version> <platform>`, which builds a freshly generated app at that React Native version (0.82.1 for the minimum lane) against the packed library. Verify the example and the RN 0.82 test app build for Android and iOS in CI.
 - [ ] 1.8 Replace `.github/workflows/*` with PR CI. Verify every job is green on the scaffold PR. The jobs are:
   - lint, typecheck, Jest, and `openspec validate --strict`
   - Android unit tests and an example build on the RN 0.82 and latest lanes
