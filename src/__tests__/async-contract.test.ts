@@ -33,6 +33,11 @@ const asyncCalls: Array<[string, () => Promise<unknown>]> = [
     'showAccessoryPicker',
     () => BluetoothClassic.showAccessoryPicker([] as never),
   ],
+  ['connect', () => BluetoothClassic.connect(7 as never, { timeoutMs: 0 })],
+  ['accept', () => BluetoothClassic.accept({ uuid: 'x' })],
+  ['cancelAccept', () => BluetoothClassic.cancelAccept()],
+  ['getConnections', () => BluetoothClassic.getConnections()],
+  ['getConnection', () => BluetoothClassic.getConnection(undefined as never)],
 ];
 
 const environments: Array<[string, () => void]> = [

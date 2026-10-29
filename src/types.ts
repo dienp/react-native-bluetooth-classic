@@ -117,3 +117,67 @@ export interface AccessoryPickerOptions {
   /** Only show accessories whose name contains this text. */
   nameFilter?: string;
 }
+
+export type ConnectionState =
+  'connecting' | 'connected' | 'disconnecting' | 'disconnected';
+
+/**
+ * Why a connection ended: `'local'` after `disconnect()`, `'remote'` when the
+ * peer closed the link or the link dropped, `'error'` when the library ended
+ * it because of a failure (see `error`).
+ */
+export type DisconnectReason = 'local' | 'remote' | 'error';
+
+export interface ConnectionStateEvent {
+  readonly state: ConnectionState;
+  readonly previousState: ConnectionState;
+  readonly timestamp: number;
+}
+
+export interface ConnectOptions {
+  /** Defaults to 15000. */
+  timeoutMs?: number;
+  /** Aborting it cancels a pending connect with `CONNECT_CANCELLED`. */
+  signal?: AbortSignal;
+  /** Limit for received bytes not yet delivered to a consumer. Defaults to 1 MiB. */
+  maxBufferBytes?: number;
+  /** Ignored on iOS. */
+  android?: {
+    /** Defaults to `'secure'`. */
+    transport?: 'secure' | 'insecure';
+    /** Service UUID. Defaults to the Serial Port Profile UUID. */
+    uuid?: string;
+    /** Retry once on this RFCOMM channel if the UUID-based attempt fails. Opt-in. */
+    fallbackChannel?: number;
+  };
+  /** Ignored on Android. */
+  ios?: {
+    /** Defaults to the first declared protocol the accessory supports. */
+    protocol?: string;
+  };
+}
+
+export interface AcceptOptions {
+  /** Defaults to the Serial Port Profile UUID. */
+  uuid?: string;
+  serviceName?: string;
+  /** Defaults to `'secure'`. */
+  transport?: 'secure' | 'insecure';
+  /** No default: waits until a device connects or the accept is cancelled. */
+  timeoutMs?: number;
+  /** Aborting it cancels the pending accept with `ACCEPT_CANCELLED`. */
+  signal?: AbortSignal;
+  /** Limit for received bytes not yet delivered to a consumer. Defaults to 1 MiB. */
+  maxBufferBytes?: number;
+}
+
+export interface DisconnectOptions {
+  /** How long queued writes may take to finish. Defaults to 5000. */
+  timeoutMs?: number;
+}
+
+export interface ReadOptions {
+  /** Reject with `READ_TIMEOUT` when no frame arrives in time. */
+  timeoutMs?: number;
+  signal?: AbortSignal;
+}

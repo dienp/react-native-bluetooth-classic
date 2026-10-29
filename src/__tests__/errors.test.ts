@@ -136,9 +136,24 @@ describe('toBluetoothClassicError', () => {
     expect(toBluetoothClassicError(undefined).code).toBe('UNKNOWN');
   });
 
-  it('returns BluetoothClassicErrors unchanged', () => {
+  it('returns BluetoothClassicErrors unchanged when no context is missing', () => {
     const error = new BluetoothClassicError(ErrorCode.NOT_CONNECTED);
     expect(toBluetoothClassicError(error)).toBe(error);
+    expect(toBluetoothClassicError(error, {})).toBe(error);
+  });
+
+  it('adds missing call context to BluetoothClassicErrors', () => {
+    const error = new BluetoothClassicError(ErrorCode.INVALID_ARGUMENT, 'bad', {
+      nativeCode: 'X',
+    });
+    const withContext = toBluetoothClassicError(error, { connectionId: 'c1' });
+    expect(withContext).toMatchObject({
+      code: ErrorCode.INVALID_ARGUMENT,
+      message: 'bad',
+      connectionId: 'c1',
+      nativeCode: 'X',
+    });
+    expect(withContext.stack).toBe(error.stack);
   });
 
   it('adds call context when the native error lacks it', () => {

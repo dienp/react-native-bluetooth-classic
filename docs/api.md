@@ -1,6 +1,6 @@
 # API reference
 
-> v2 is in development. This page covers the APIs implemented in the JavaScript layer so far; connections and data transfer are added by the next task group. The native modules are still stubs that reject with `UNSUPPORTED_ON_PLATFORM`.
+> v2 is in development. The JavaScript layer described here is implemented and tested; the native modules are still stubs that reject with `UNSUPPORTED_ON_PLATFORM`.
 
 ```ts
 import * as BluetoothClassic from '@dynlabs/react-native-bluetooth-classic';
@@ -91,8 +91,26 @@ On iOS, `'connect'` always resolves as granted and the other scopes fail with `U
 
 `IosAccessory`: `{ id, name, manufacturer, modelNumber, serialNumber, firmwareRevision, hardwareRevision, protocolStrings }`. `id` changes every time the accessory reconnects to iOS; `serialNumber` does not.
 
+## Connections
+
+| Function | Notes |
+|---|---|
+| `connect(deviceId, options?): Promise<Connection>` | Android address or iOS accessory id. See [data.md](./data.md#connecting) |
+| `accept(options?): Promise<Connection>` | Android only |
+| `cancelAccept(): Promise<void>` | Android only |
+| `getConnections(): Promise<Connection[]>` | Connections that have not ended |
+| `getConnection(id): Promise<Connection \| null>` | |
+
+`Connection`: `id`, `device`, `protocol` (iOS), `connectedAt`, `state`, `write()`, `disconnect()`, `onData()`, `onStateChange()`, `onDisconnected()`, `createReader()`. See [data.md](./data.md).
+
+## Data helpers
+
+`delimiter()`, `fixedLength()`, `raw()`, `encodeText()`, `decodeText()`, `createTextDecoder()`, `toHex()`, `fromHex()`, `toBase64()`, `fromBase64()`. See [data.md](./data.md#framers).
+
 ## Examples
 
 - [Quick start](./examples/quick-start.ts)
 - [Discovery](./examples/discovery.ts)
 - [iOS accessories](./examples/accessories.ts)
+- [Printing and request/response](./examples/printer.ts)
+- [Streaming and a custom framer](./examples/streaming.ts)
