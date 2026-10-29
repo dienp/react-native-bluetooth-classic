@@ -147,7 +147,8 @@ jobs:
 
     env:
       MIN_RN_VERSION: 0.82.1
-      XCODE_VERSION: '16.4'
+      # Oldest Xcode on the macos-latest image; React Native 0.82 shipped against Xcode 26.0.
+      XCODE_VERSION: '26.0'
 
     steps:
       - name: Checkout
