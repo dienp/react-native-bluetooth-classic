@@ -1,0 +1,184 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  merge_group:
+    types:
+      - checks_requested
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  OPENSPEC_TELEMETRY: 0
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Lint files
+        run: yarn lint
+
+      - name: Typecheck files
+        run: yarn typecheck
+
+      - name: Validate OpenSpec changes
+        run: yarn openspec:validate
+
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Run unit tests
+        run: yarn test --coverage
+
+  build-library:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Build package
+        run: yarn prepare
+
+      - name: Check package contents
+        run: yarn pack --dry-run
+
+  # Latest supported React Native: the example app in this repository.
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Install JDK
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Finalize Android SDK
+        run: |
+          /bin/bash -c "yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null"
+
+      - name: Cache Gradle
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: |
+            ~/.gradle/wrapper
+            ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('example/android/gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Build example for Android
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx6g"
+        run: yarn example build:android
+
+  build-ios:
+    runs-on: macos-latest
+
+    env:
+      XCODE_VERSION: 26
+      RCT_USE_RN_DEP: 1
+      RCT_USE_PREBUILT_RNCORE: 1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Use appropriate Xcode version
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: Install cocoapods
+        run: |
+          cd example
+          bundle install
+          bundle exec pod install --project-directory=ios
+
+      - name: Build example for iOS
+        run: yarn example build:ios
+
+  # Minimum supported React Native: a fresh app that installs the packed library.
+  build-min-rn:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: android
+            os: ubuntu-latest
+          - platform: ios
+            os: macos-latest
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      MIN_RN_VERSION: 0.82.1
+      # Newest Xcode 26.x, as in build-ios. The image's Xcode 26.0.1 has no
+      # iOS platform installed, so xcodebuild finds no Simulator destination.
+      XCODE_VERSION: '26'
+      # Prebuilt React Native core and dependencies, as in build-ios. Built from
+      # source, RN 0.82's fmt 11.0.2 fails to compile with Xcode 26.6's clang
+      # ("call to consteval function ... is not a constant expression").
+      RCT_USE_RN_DEP: 1
+      RCT_USE_PREBUILT_RNCORE: 1
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Install JDK
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Finalize Android SDK
+        if: matrix.platform == 'android'
+        run: |
+          /bin/bash -c "yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null"
+
+      - name: Use appropriate Xcode version
+        if: matrix.platform == 'ios'
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: Build a React Native ${{ env.MIN_RN_VERSION }} app with the packed library
+        env:
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx6g"
+        run: scripts/ci/build-test-app.sh "$MIN_RN_VERSION" "${{ matrix.platform }}"

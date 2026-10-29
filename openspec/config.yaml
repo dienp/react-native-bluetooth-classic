@@ -1,0 +1,54 @@
+schema: spec-driven
+
+context: |
+  Product: @dynlabs/react-native-bluetooth-classic on npm (successor of the v1 package react-native-bluetooth-classic), a React Native library for Bluetooth Classic
+  serial (RFCOMM/SPP) on Android and MFi ExternalAccessory sessions on iOS.
+
+  Support matrix (v2.x) - every artifact must respect it:
+  - React Native >= 0.82 (new architecture + bridgeless only; TurboModule via codegen).
+    CI lanes: 0.82 and the latest release.
+  - Android: minSdk 24 (Android 7.0) through API 37 (Android 17); compileSdk 36 by default,
+    overridable by the host app; Kotlin 2.x, JVM 17, AGP 8.x and 9.
+  - iOS: 15.1 through iOS 27; Xcode >= 16.1; Swift 5.9+ (language mode 5).
+  - Expo: development builds only, through the package's own config plugin.
+  - Not supported: Windows, macOS, web, Expo Go, BLE, non-MFi iOS accessories.
+
+  Android behavior bands that change observable behavior:
+  - API 24-30: BLUETOOTH/BLUETOOTH_ADMIN plus location permission (COARSE on 24-28,
+    FINE on 29-30); discovery also needs Location Services switched on.
+  - API 31+: BLUETOOTH_SCAN / BLUETOOTH_CONNECT runtime permissions; enabling the adapter
+    only via the ACTION_REQUEST_ENABLE intent.
+  - API 36: bond-loss intents (ACTION_KEY_MISSING, ACTION_ENCRYPTION_CHANGE); public removeBond.
+  - API 37: RFCOMM InputStream.read() returns -1 on remote close instead of throwing.
+
+  iOS constraints: ExternalAccessory only works with MFi accessories already connected at the
+  OS level; no discovery, pairing, server sockets, adapter state or adapter enable; protocol
+  strings must be declared in UISupportedExternalAccessoryProtocols.
+
+  Stack: TypeScript (strict) public API; Kotlin on Android; Swift core with a thin
+  Objective-C++ TurboModule shim on iOS; react-native-builder-bob packaging; Jest for JS,
+  Robolectric/JUnit for Android, XCTest for iOS.
+
+  v2 is a breaking rewrite of v1 (1.73.x). v1 behavior is not specified and is not preserved
+  unless a spec says so; v1 stays available on the 1.x branch.
+
+rules:
+  proposal:
+    - Mark every breaking change with **BREAKING**.
+    - State what is out of scope.
+  specs:
+    - Every requirement that can fail names the exact ErrorCode (defined by the error-model capability) for each failure.
+    - Every requirement whose behavior differs by platform has at least one Android scenario and one iOS scenario.
+    - Android behavior that depends on the OS version names the API level band it applies to.
+    - Use SHALL/MUST normative language and WHEN/THEN scenarios.
+  design:
+    - Each decision lists the alternatives considered and why they were rejected.
+  tasks:
+    - Each task group ships its own tests and documentation updates; the final group is integration only.
+    - Each task states how it is verified.
+
+operations:
+  apply:
+    guidance:
+      - Land each task group as its own pull request.
+      - Do not change the public API beyond what the specs describe; update the specs first.
