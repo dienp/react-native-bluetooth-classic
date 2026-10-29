@@ -17,14 +17,14 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
   - strict `tsconfig`, ESLint, Prettier, and Jest with the React Native preset
 
   Verify `npm run typecheck && npm run lint && npm test` pass on the empty skeleton.
-- [ ] 1.5 Scaffold the Android library:
+- [x] 1.5 Scaffold the Android library:
   - Kotlin, new DSL, `namespace kjd.reactnative.bluetooth`
   - root-project SDK lookups with defaults compileSdk 36, minSdk 24, targetSdk 36; JVM 17; the `com.facebook.react` plugin
   - the manifest declarations from the `permissions` spec
 
   Verify the example app's merged manifest (`./gradlew :app:processDebugMainManifest`) contains exactly those entries.
-- [ ] 1.6 Scaffold the iOS pod: `install_modules_dependencies(s)`, `min_ios_version_supported`, `s.frameworks = 'ExternalAccessory'`, `swift_version '5.9'`. Verify `pod install` and an `xcodebuild` of the example succeed.
-- [ ] 1.7 Create `example/` on the latest React Native, plus `scripts/ci/build-test-app.sh <version> <platform>`, which builds a freshly generated app at that React Native version (0.82.1 for the minimum lane) against the packed library. Verify the example and the RN 0.82 test app build for Android and iOS in CI.
+- [x] 1.6 Scaffold the iOS pod: `install_modules_dependencies(s)`, `min_ios_version_supported`, `s.frameworks = 'ExternalAccessory'`, `swift_version '5.9'`. Verify `pod install` and an `xcodebuild` of the example succeed.
+- [x] 1.7 Create `example/` on the latest React Native, plus `scripts/ci/build-test-app.sh <version> <platform>`, which builds a freshly generated app at that React Native version (0.82.1 for the minimum lane) against the packed library. Verify the example and the RN 0.82 test app build for Android and iOS in CI.
 - [ ] 1.8 Replace `.github/workflows/*` with PR CI. Verify every job is green on the scaffold PR. The jobs are:
   - lint, typecheck, Jest, and `openspec validate --strict`
   - Android unit tests and an example build on the RN 0.82 and latest lanes
@@ -41,7 +41,7 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
 
 - [x] 2.1 Add `errors/errors.json` as the single source of error codes, and a generator that emits `src/errors/ErrorCode.ts`, `android/.../ErrorCode.kt`, `ios/RNBCErrorCode.h` (plus `ErrorCode.swift` once the Swift core lands in group 7) and the tables in `docs/errors.md`. Add a CI drift check. Verify regeneration is a no-op and that a hand edit makes the check fail.
 - [x] 2.2 Implement `BluetoothClassicError`, the `ErrorCode` value export, `isBluetoothClassicError(value, code?)`, `toJSON()`, and the `toBluetoothClassicError()` normalizer. Verify with Jest tests that cover every `error-model` scenario that JS can observe, including unknown codes becoming `UNKNOWN` with native fields preserved.
-- [ ] 2.3 Write the codegen spec `src/specs/NativeBluetoothClassic.ts` (methods and `CodegenTypes.EventEmitter` events per design D3/D4) and its `codegenConfig`. Verify the generated Android and iOS spec files appear in the example build on both RN lanes.
+- [x] 2.3 Write the codegen spec `src/specs/NativeBluetoothClassic.ts` (methods and `CodegenTypes.EventEmitter` events per design D3/D4) and its `codegenConfig`. Verify the generated Android and iOS spec files appear in the example build on both RN lanes.
 - [x] 2.4 Implement module resolution with `TurboModuleRegistry.get()`, the `MODULE_NOT_LINKED` proxy (async calls reject, sync calls throw), and the unsupported-host-platform behavior. Verify with Jest tests for the `platform-support` "Missing native module" and "Unsupported host platforms" scenarios.
 - [x] 2.5 Implement strict option validation: unknown keys, types, ranges, and platform-scoped `android`/`ios` blocks. Every failure rejects `INVALID_ARGUMENT` and names the key. Verify with Jest tests, including the v1-style `DELIMITER` key and `timeoutMs: -1`.
 - [x] 2.6 Implement the typed subscription layer: idempotent `remove()`, listeners isolated from each other, a throwing listener does not stop others, and unsupported events throw `UNSUPPORTED_ON_PLATFORM`. Verify with Jest tests for the `native-module-contract` subscription scenarios.
