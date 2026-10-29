@@ -147,8 +147,9 @@ jobs:
 
     env:
       MIN_RN_VERSION: 0.82.1
-      # Oldest Xcode on the macos-latest image; React Native 0.82 shipped against Xcode 26.0.
-      XCODE_VERSION: '26.0'
+      # Newest Xcode 26.x, as in build-ios. The image's Xcode 26.0.1 has no
+      # iOS platform installed, so xcodebuild finds no Simulator destination.
+      XCODE_VERSION: '26'
 
     steps:
       - name: Checkout
