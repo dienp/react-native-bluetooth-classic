@@ -72,29 +72,29 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
 
 ## 4. Android foundation
 
-- [ ] 4.1 Implement `BluetoothClassicModule` (Kotlin, the generated spec subclass), the per-entry-point guard, and the `ErrorMapper` built on the generated `ErrorCode.kt`. Verify with JVM tests that each mapped exception type produces its expected code and that no exception escapes an entry point.
-- [ ] 4.2 Implement the synchronous `getCapabilities()` (API level, flags, `bondLossEvents` only on API 36+), `setLogLevel`, and a logger that redacts payloads below `debug`. Verify with Robolectric tests at API 35 and 36, plus a test asserting that no payload is logged at the default level.
-- [ ] 4.3 Implement `AdapterMonitor`:
+- [x] 4.1 Implement `BluetoothClassicModule` (Kotlin, the generated spec subclass), the per-entry-point guard, and the `ErrorMapper` built on the generated `ErrorCode.kt`. Verify with JVM tests that each mapped exception type produces its expected code and that no exception escapes an entry point.
+- [x] 4.2 Implement the synchronous `getCapabilities()` (API level, flags, `bondLossEvents` only on API 36+), `setLogLevel`, and a logger that redacts payloads below `debug`. Verify with Robolectric tests at API 35 and 36, plus a test asserting that no payload is logged at the default level.
+- [x] 4.3 Implement `AdapterMonitor`:
   - `getAdapterState()`
   - the application-context state receiver, registered with `ContextCompat.registerReceiver(..., RECEIVER_EXPORTED)`
   - `onAdapterStateChange` events
   - the precondition helper that rejects `BLUETOOTH_UNAVAILABLE` or `BLUETOOTH_DISABLED`
 
   Verify with Robolectric tests for the `adapter-state` scenarios, including a transition while the host activity is paused.
-- [ ] 4.4 Implement `PermissionGate`:
+- [x] 4.4 Implement `PermissionGate`:
   - scope-to-permission mapping per API band
   - `checkPermissions`, and `requestPermissions` with `canAskAgain`
   - the Location Services check on API 24–30
 
   Verify with Robolectric tests at API 24, 28, 29, 30, 31, 33 and 36 for every `permissions` scenario.
-- [ ] 4.5 Implement:
+- [x] 4.5 Implement:
   - `requestEnable()`: shared pending result, `USER_REJECTED`, `ACTIVITY_UNAVAILABLE`, `PERMISSION_DENIED` on 31+, and the 15 s wait for `STATE_ON`
   - `openSettings()`
   - `setAdapterName()`: 248-byte limit and empty-name check
 
   Verify with Robolectric tests for each scenario.
-- [ ] 4.6 Implement the `invalidate()` teardown skeleton: unregister receivers and cancel pending operations. Verify with a Robolectric test that no receiver remains registered after invalidation.
-- [ ] 4.7 Write `docs/android.md` covering:
+- [x] 4.6 Implement the `invalidate()` teardown skeleton: unregister receivers and cancel pending operations. Verify with a Robolectric test that no receiver remains registered after invalidation.
+- [x] 4.7 Write `docs/android.md` covering:
   - permissions per API band and the manifest overrides (`tools:remove` for `maxSdkVersion` and `neverForLocation`)
   - the Location Services trap
   - `requestEnable`

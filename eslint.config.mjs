@@ -36,6 +36,12 @@ export default defineConfig([
     },
   },
   {
-    ignores: ['node_modules/', 'lib/', 'example/dist/', 'coverage/'],
+    ignores: [
+      'node_modules/',
+      'lib/',
+      'example/dist/',
+      'coverage/',
+      '**/build/',
+    ],
   },
 ]);
