@@ -168,7 +168,7 @@ export class FakeNativeModule implements Spec {
   enablePromptResponse: 'accept' | 'decline' = 'accept';
   /** How long the OS runs a discovery session when no timeout is given. */
   discoveryDurationMs = 12_000;
-  /** Android API 24-35: whether the OS blocks bond removal. */
+  /** Whether the OS blocks bond removal (possible on any Android release). */
   unpairBlocked = false;
   /** Pairing responses per address; the default is `'accept'`. */
   readonly pairingResponses = new Map<string, FakePairingResponse>();
@@ -269,6 +269,17 @@ export class FakeNativeModule implements Spec {
       );
     }
     if (state !== 'on' && this.platform.os === 'android') {
+      for (const [address, pairing] of Array.from(this.pairings)) {
+        this.pairings.delete(address);
+        clearTimeout(pairing.timer);
+        pairing.reject(
+          nativeRejection(
+            ErrorCode.BLUETOOTH_DISABLED,
+            'Bluetooth was turned off',
+            { deviceId: address }
+          )
+        );
+      }
       for (const [operationId, operation] of Array.from(this.operations)) {
         this.operations.delete(operationId);
         operation.timers.forEach(clearTimeout);
@@ -621,7 +632,7 @@ export class FakeNativeModule implements Spec {
     if (device === undefined || device.bondState === 'none') {
       return;
     }
-    if (this.apiLevel() < 36 && this.unpairBlocked) {
+    if (this.unpairBlocked) {
       throw nativeRejection(
         ErrorCode.UNSUPPORTED_ON_PLATFORM,
         'This Android release does not allow apps to remove bonds; unpair in system settings',

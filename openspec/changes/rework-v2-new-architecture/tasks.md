@@ -122,7 +122,7 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
   - immediate `PAIRING_FAILED` when `createBond` returns false
 
   Verify with Robolectric tests for every `device-pairing` "Pair" scenario.
-- [ ] 5.5 Implement `unpair()`: public `removeBond()` on API 36+, and reflection on API 24–35 that rejects `UNSUPPORTED_ON_PLATFORM` when blocked. Verify with Robolectric tests at API 33 and 36.
+- [ ] 5.5 Implement `unpair()`: `removeBond()` through reflection on every API level (no release makes it public), rejecting `UNSUPPORTED_ON_PLATFORM` when the OS blocks it. Verify with Robolectric tests at API 33 and 36.
 - [ ] 5.6 Implement `onBondStateChange` and `onBondLost` (API 36+, using `ACTION_KEY_MISSING`). Verify with Robolectric tests at API 35 and 36.
 - [ ] 5.7 Add the discovery and pairing sections to `docs/android.md`, and the discovery and pairing screens to the example app. Verify the example builds on both RN lanes and the screens show results from the fake in a Detox-free smoke test (Jest render).
 

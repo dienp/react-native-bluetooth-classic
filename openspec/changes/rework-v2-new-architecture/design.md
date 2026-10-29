@@ -156,7 +156,7 @@ See `proposal.md` → Why for the v1 defects, and `specs/` for the required beha
 ### D9. Android permissions, enable request and settings
 - **Permissions:** requested through `PermissionAwareActivity` (implemented by `ReactActivity`), with a library-unique request code. `canAskAgain` comes from `shouldShowRequestPermissionRationale` combined with whether the permission was requested before, which is persisted in `SharedPreferences`.
 - **Enable request:** `requestEnable()` uses `startActivityForResult` with a unique request code and an `ActivityEventListener`. Concurrent callers share a single pending result. The call resolves on `STATE_ON`; it rejects with `BLUETOOTH_DISABLED` if the result was OK but the adapter doesn't reach `on` within 15 seconds.
-- **Unpair:** `unpair` uses the public `removeBond()` on API 36+, and reflection on 24–35. A `SecurityException`, `NoSuchMethodException` or `false` return becomes `UNSUPPORTED_ON_PLATFORM`.
+- **Unpair:** no Android release has a public `removeBond()` (checked against the API 36 and 37 SDKs), so `unpair` calls it through reflection on every API level. A `SecurityException`, `NoSuchMethodException`, `IllegalAccessException` or `false` return becomes `UNSUPPORTED_ON_PLATFORM`.
 - **Pairing timeout:** cancelling a timed-out pairing uses `cancelBondProcess()` (public on API 37, reflection below).
 - **Alternatives considered:**
   - *`ActivityResultRegistry`*: needs a `ComponentActivity` and registration before `STARTED`, which a library can't guarantee.

@@ -77,7 +77,7 @@ On iOS, `'connect'` always resolves as granted and the other scopes fail with `U
 | Function | Notes |
 |---|---|
 | `pair(address, { timeoutMs? }): Promise<AndroidDevice>` | Default timeout 60 s. Pairing confirmation always goes through the system UI. `PAIRING_FAILED`, `PAIRING_TIMEOUT`, `PAIRING_IN_PROGRESS` |
-| `unpair(address): Promise<void>` | Uses the public API on API 36+. On API 24–35 it fails with `UNSUPPORTED_ON_PLATFORM` when the OS blocks bond removal |
+| `unpair(address): Promise<void>` | Android has no public bond-removal API, so this fails with `UNSUPPORTED_ON_PLATFORM` on releases that block it; the user then unpairs in system settings |
 | `onBondStateChange(listener): Subscription` | `{ device, state, previousState, timestamp }` for any device |
 | `onBondLost(listener): Subscription` | API 36+ only; see `getCapabilities().bondLossEvents` |
 

@@ -49,14 +49,14 @@ The library SHALL NOT programmatically supply PINs or passkeys, or confirm pairi
 - **THEN** the OS pairing dialog collects it from the user, and the library only observes the bond outcome
 
 ### Requirement: Unpair a device
-On Android, `unpair(address)` SHALL remove the bond and resolve once that address reaches `'none'`. If the device is not bonded it SHALL resolve immediately. On API 36 and later it SHALL use the public OS API. On API 24 to 35, if the OS blocks bond removal, it SHALL reject with `UNSUPPORTED_ON_PLATFORM`. On iOS it SHALL reject with `UNSUPPORTED_ON_PLATFORM`.
+On Android, `unpair(address)` SHALL remove the bond and resolve once that address reaches `'none'`. If the device is not bonded it SHALL resolve immediately. No Android release offers a public API for removing a bond, so the library SHALL use the OS's hidden bond-removal call where the OS still allows apps to make it. If the OS blocks it, on any API level, the call SHALL reject with `UNSUPPORTED_ON_PLATFORM`. On iOS it SHALL reject with `UNSUPPORTED_ON_PLATFORM`.
 
-#### Scenario: Unpair on API 36+
-- **WHEN** an app on API 36 or later calls `unpair(address)` for a bonded device
+#### Scenario: Unpair where the OS allows it (Android)
+- **WHEN** an Android app calls `unpair(address)` for a bonded device, and the OS allows bond removal
 - **THEN** the promise resolves after the device's bond state becomes `'none'`
 
-#### Scenario: Bond removal blocked on API 24-35
-- **WHEN** an app on API 24 to 35 calls `unpair(address)` and the OS blocks bond removal
+#### Scenario: Bond removal blocked (Android)
+- **WHEN** an Android app calls `unpair(address)` and the OS blocks bond removal
 - **THEN** the promise rejects with `UNSUPPORTED_ON_PLATFORM`, and the message explains that the user must unpair in system settings
 
 #### Scenario: Unpair on iOS

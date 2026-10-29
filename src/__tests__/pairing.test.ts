@@ -113,6 +113,19 @@ describe('pair', () => {
     await expect(first).resolves.toMatchObject({ bondState: 'bonded' });
   });
 
+  it('rejects with BLUETOOTH_DISABLED when the adapter turns off', async () => {
+    const fake = installFakeNativeModule();
+    fake.addDevice({ address: ADDRESS });
+    fake.pairingResponses.set(ADDRESS, 'ignore');
+    const outcome = pair(ADDRESS).catch((error: unknown) => error);
+    await jest.advanceTimersByTimeAsync(0);
+    fake.setAdapterState('turningOff');
+    expect(await outcome).toMatchObject({
+      code: ErrorCode.BLUETOOTH_DISABLED,
+      deviceId: ADDRESS,
+    });
+  });
+
   it('rejects malformed addresses with INVALID_ARGUMENT', async () => {
     const fake = installFakeNativeModule();
     await expect(pair('00:11:22')).rejects.toMatchObject({
@@ -130,14 +143,17 @@ describe('pair', () => {
 });
 
 describe('unpair', () => {
-  it('removes the bond on API 36+', async () => {
-    const fake = installFakeNativeModule({ os: 'android', apiLevel: 36 });
-    fake.addDevice({ address: ADDRESS, bonded: true });
-    const events: BondStateChangeEvent[] = [];
-    onBondStateChange((e) => events.push(e));
-    await unpair(ADDRESS);
-    expect(events.map((e) => e.state)).toEqual(['none']);
-  });
+  it.each([33, 36])(
+    'removes the bond when the OS allows it (API %i)',
+    async (apiLevel) => {
+      const fake = installFakeNativeModule({ os: 'android', apiLevel });
+      fake.addDevice({ address: ADDRESS, bonded: true });
+      const events: BondStateChangeEvent[] = [];
+      onBondStateChange((e) => events.push(e));
+      await unpair(ADDRESS);
+      expect(events.map((e) => e.state)).toEqual(['none']);
+    }
+  );
 
   it('resolves when the device is not bonded', async () => {
     const fake = installFakeNativeModule();
@@ -145,15 +161,18 @@ describe('unpair', () => {
     await expect(unpair(ADDRESS)).resolves.toBeUndefined();
   });
 
-  it('rejects with UNSUPPORTED_ON_PLATFORM when blocked on API 24-35', async () => {
-    const fake = installFakeNativeModule({ os: 'android', apiLevel: 33 });
-    fake.addDevice({ address: ADDRESS, bonded: true });
-    fake.unpairBlocked = true;
-    await expect(unpair(ADDRESS)).rejects.toMatchObject({
-      code: ErrorCode.UNSUPPORTED_ON_PLATFORM,
-      message: expect.stringMatching(/system settings/),
-    });
-  });
+  it.each([33, 36])(
+    'rejects with UNSUPPORTED_ON_PLATFORM when the OS blocks it (API %i)',
+    async (apiLevel) => {
+      const fake = installFakeNativeModule({ os: 'android', apiLevel });
+      fake.addDevice({ address: ADDRESS, bonded: true });
+      fake.unpairBlocked = true;
+      await expect(unpair(ADDRESS)).rejects.toMatchObject({
+        code: ErrorCode.UNSUPPORTED_ON_PLATFORM,
+        message: expect.stringMatching(/system settings/),
+      });
+    }
+  );
 
   it('rejects with UNSUPPORTED_ON_PLATFORM on iOS', async () => {
     installFakeNativeModule({ os: 'ios' });
