@@ -35,6 +35,9 @@ case "$PLATFORM" in
     ./gradlew assembleDebug --no-daemon --console=plain -PreactNativeArchitectures=arm64-v8a
     ;;
   ios)
+    # Ruby 3.4 no longer bundles nkf, which older CocoaPods needs for
+    # `require 'kconv'`; the RN 0.82 template's Gemfile predates that.
+    grep -q "^gem 'nkf'" ../Gemfile || printf "\ngem 'nkf'\n" >> ../Gemfile
     cd ios
     bundle install
     bundle exec pod install
