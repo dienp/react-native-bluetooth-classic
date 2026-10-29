@@ -3,6 +3,7 @@ package kjd.reactnative.bluetooth
 import android.app.Activity
 import android.app.Application
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.content.Intent
 import android.os.Build
@@ -155,6 +156,25 @@ abstract class ModuleTest {
     idle()
   }
 
+  /** Delivers an OS broadcast and runs what it triggers. */
+  protected fun send(intent: Intent) {
+    app.sendBroadcast(intent)
+    idle()
+  }
+
+  /** The adapter's device for [address], with its Robolectric state set. */
+  protected fun remoteDevice(
+    address: String,
+    name: String? = null,
+    bondState: Int = BluetoothDevice.BOND_NONE,
+    type: Int = BluetoothDevice.DEVICE_TYPE_CLASSIC
+  ): BluetoothDevice =
+    adapter.getRemoteDevice(address).also {
+      shadowOf(it).setName(name)
+      shadowOf(it).setBondState(bondState)
+      shadowOf(it).setType(type)
+    }
+
   /** Starts a host activity and makes it React Native's current activity. */
   protected fun foregroundActivity(): ActivityController<TestPermissionActivity> {
     val controller = Robolectric.buildActivity(TestPermissionActivity::class.java).setup()
@@ -175,3 +195,25 @@ abstract class ModuleTest {
   }
 }
 
+
+/** The OS broadcasts the discovery and bond tests play back. */
+object Broadcasts {
+  fun found(device: BluetoothDevice, rssi: Short? = null, name: String? = null): Intent =
+    Intent(BluetoothDevice.ACTION_FOUND).putExtra(BluetoothDevice.EXTRA_DEVICE, device).apply {
+      rssi?.let { putExtra(BluetoothDevice.EXTRA_RSSI, it) }
+      name?.let { putExtra(BluetoothDevice.EXTRA_NAME, it) }
+    }
+
+  fun discoveryStarted() = Intent(BluetoothAdapter.ACTION_DISCOVERY_STARTED)
+
+  fun discoveryFinished() = Intent(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
+
+  fun bondState(device: BluetoothDevice, state: Int, previous: Int): Intent =
+    Intent(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
+      .putExtra(BluetoothDevice.EXTRA_DEVICE, device)
+      .putExtra(BluetoothDevice.EXTRA_BOND_STATE, state)
+      .putExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, previous)
+
+  fun keyMissing(device: BluetoothDevice): Intent =
+    Intent(BondManager.ACTION_KEY_MISSING).putExtra(BluetoothDevice.EXTRA_DEVICE, device)
+}

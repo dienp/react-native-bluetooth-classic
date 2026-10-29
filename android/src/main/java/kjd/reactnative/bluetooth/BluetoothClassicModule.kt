@@ -15,8 +15,8 @@ import com.facebook.react.bridge.WritableMap
 /**
  * The TurboModule. Every entry point wraps its promise in a [SafePromise] and
  * runs inside [guarded], so each call settles exactly once and no exception
- * reaches React Native. Discovery, pairing and connections still reject with
- * `UNSUPPORTED_ON_PLATFORM` until task groups 5 and 6 land.
+ * reaches React Native. Connections still reject with
+ * `UNSUPPORTED_ON_PLATFORM` until task group 6 lands.
  */
 class BluetoothClassicModule
 internal constructor(reactContext: ReactApplicationContext, adapterProvider: (() -> BluetoothAdapter?)?) :
@@ -33,6 +33,8 @@ internal constructor(reactContext: ReactApplicationContext, adapterProvider: (()
   private val preconditions = Preconditions(adapterMonitor, permissions)
   private val enableRequester =
     EnableRequester(preconditions, permissions, { reactApplicationContext.currentActivity }, main)
+  internal val discovery = DiscoveryManager(appContext, preconditions, permissions, main)
+  internal val bonds = BondManager(appContext, preconditions, main)
 
   override fun initialize() {
     super.initialize()
@@ -40,7 +42,26 @@ internal constructor(reactContext: ReactApplicationContext, adapterProvider: (()
       emitOnAdapterStateChange(Writables.map(adapterStateEvent(state, previousState, System.currentTimeMillis())))
     }
     adapterMonitor.addListener(enableRequester)
+    adapterMonitor.addListener(discovery)
+    adapterMonitor.addListener(bonds)
+    discovery.addListener { device ->
+      emitOnDeviceFound(Writables.map(mapOf("device" to device, "timestamp" to now())))
+    }
+    bonds.addListener(
+      object : BondManager.Listener {
+        override fun onBondStateChange(device: Map<String, Any?>, state: String, previousState: String) =
+          emitOnBondStateChange(
+            Writables.map(
+              mapOf("device" to device, "state" to state, "previousState" to previousState, "timestamp" to now())
+            )
+          )
+
+        override fun onBondLost(device: Map<String, Any?>) =
+          emitOnBondLost(Writables.map(mapOf("device" to device, "timestamp" to now())))
+      }
+    )
     adapterMonitor.start()
+    bonds.start()
     reactApplicationContext.addActivityEventListener(enableRequester)
     reactApplicationContext.addLifecycleEventListener(permissions)
   }
@@ -49,11 +70,14 @@ internal constructor(reactContext: ReactApplicationContext, adapterProvider: (()
   override fun invalidate() {
     invalidated = true
     adapterMonitor.stop()
+    bonds.stop()
     reactApplicationContext.removeActivityEventListener(enableRequester)
     reactApplicationContext.removeLifecycleEventListener(permissions)
     val cancel = Runnable {
       enableRequester.cancel()
       permissions.cancel()
+      discovery.tearDown()
+      bonds.tearDown()
     }
     // On the main thread, cancel now so no pending result can slip in first.
     if (Looper.myLooper() == Looper.getMainLooper()) cancel.run() else main.post(cancel)
@@ -126,22 +150,25 @@ internal constructor(reactContext: ReactApplicationContext, adapterProvider: (()
   override fun requestPermissions(scope: String, promise: Promise) =
     entryOnMain(promise, "requestPermissions") { permissions.request(PermissionScope.parse(scope), it) }
 
-  // ---- Discovery and pairing (task group 5) ----
+  // ---- Discovery and pairing ----
 
+  @SuppressLint("MissingPermission") // requireAdapter checks the connect scope.
   override fun getBondedDevices(promise: Promise) =
-    notImplemented(promise, "getBondedDevices")
+    entry(promise, "getBondedDevices") { safe ->
+      val adapter = preconditions.requireAdapter(PermissionScope.CONNECT)
+      safe.resolve(Writables.array(adapter.bondedDevices.orEmpty().map { DeviceMapper.toMap(it) }))
+    }
 
   override fun startDiscovery(timeoutMs: Double, promise: Promise) =
-    notImplemented(promise, "startDiscovery")
+    entryOnMain(promise, "startDiscovery") { discovery.start(timeoutMs.toLong(), it) }
 
-  override fun cancelDiscovery(promise: Promise) =
-    notImplemented(promise, "cancelDiscovery")
+  override fun cancelDiscovery(promise: Promise) = entryOnMain(promise, "cancelDiscovery", discovery::cancel)
 
   override fun pair(address: String, timeoutMs: Double, promise: Promise) =
-    notImplemented(promise, "pair")
+    entryOnMain(promise, "pair") { bonds.pair(address, timeoutMs.toLong(), it) }
 
   override fun unpair(address: String, promise: Promise) =
-    notImplemented(promise, "unpair")
+    entryOnMain(promise, "unpair") { bonds.unpair(address, it) }
 
   // ---- ExternalAccessory (iOS only) ----
 
@@ -205,6 +232,8 @@ internal constructor(reactContext: ReactApplicationContext, adapterProvider: (()
     const val MAX_ADAPTER_NAME_BYTES = 248
     private const val NOT_IMPLEMENTED_MESSAGE =
       "Not implemented yet in this @dynlabs/react-native-bluetooth-classic v2 pre-release"
+
+    private fun now() = System.currentTimeMillis().toDouble()
 
     internal fun adapterStateEvent(state: String, previousState: String, timestamp: Long): Map<String, Any> =
       mapOf("state" to state, "previousState" to previousState, "timestamp" to timestamp.toDouble())

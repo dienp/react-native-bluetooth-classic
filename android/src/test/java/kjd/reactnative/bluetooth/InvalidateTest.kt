@@ -2,6 +2,7 @@ package kjd.reactnative.bluetooth
 
 import android.app.Activity
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -21,6 +22,34 @@ class InvalidateTest : ModuleTest() {
     module.invalidate()
 
     assertTrue(registeredStateReceivers().isEmpty())
+  }
+
+  @Test
+  fun `no bond or discovery receiver remains after invalidation`() {
+    grant(PermissionGate.SCAN, PermissionGate.CONNECT, PermissionGate.FINE_LOCATION)
+    val discovery = call { module.startDiscovery(0.0, it) }
+    val actions = listOf(BluetoothDevice.ACTION_BOND_STATE_CHANGED, BluetoothDevice.ACTION_FOUND)
+    fun registered() = shadowOf(app).registeredReceivers.filter { r -> actions.any { r.intentFilter.hasAction(it) } }
+    assertEquals(2, registered().size)
+
+    module.invalidate()
+
+    assertTrue(registered().isEmpty())
+    assertFalse("the dropped session never settles", discovery.isSettled)
+  }
+
+  @Test
+  fun `a pending pairing is dropped`() {
+    grant(PermissionGate.CONNECT)
+    val device = adapter.getRemoteDevice("00:11:22:AA:BB:CC")
+    shadowOf(device).setCreatedBond(true)
+    val promise = call { module.pair(device.address, 60_000.0, it) }
+
+    module.invalidate()
+    app.sendBroadcast(Broadcasts.bondState(device, BluetoothDevice.BOND_BONDED, BluetoothDevice.BOND_BONDING))
+    idle()
+
+    assertFalse(promise.isSettled)
   }
 
   @Test
