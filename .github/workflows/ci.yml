@@ -189,6 +189,11 @@ jobs:
       # Newest Xcode 26.x, as in build-ios. The image's Xcode 26.0.1 has no
       # iOS platform installed, so xcodebuild finds no Simulator destination.
       XCODE_VERSION: '26'
+      # Prebuilt React Native core and dependencies, as in build-ios. Built from
+      # source, RN 0.82's fmt 11.0.2 fails to compile with Xcode 26.6's clang
+      # ("call to consteval function ... is not a constant expression").
+      RCT_USE_RN_DEP: 1
+      RCT_USE_PREBUILT_RNCORE: 1
 
     steps:
       - name: Checkout
