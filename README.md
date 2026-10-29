@@ -3,7 +3,7 @@
 Bluetooth Classic serial (RFCOMM/SPP) on Android and MFi ExternalAccessory sessions on iOS, for React Native's new architecture.
 
 > [!WARNING]
-> **Version 2 is under active development** and is not ready for production use. The API is being rebuilt as a TurboModule, and the native implementations are still stubs.
+> **Version 2 is under active development** and is not ready for production use. The API is being rebuilt as a TurboModule. On Android, adapter state, permissions and enabling Bluetooth are implemented; discovery, pairing, connections and the whole iOS implementation are still stubs.
 >
 > This is the successor of [`react-native-bluetooth-classic`](https://www.npmjs.com/package/react-native-bluetooth-classic), published under a new name. **v1** (`react-native-bluetooth-classic@1.73.x`) is maintained on the [`1.x` branch](https://github.com/dienp/react-native-bluetooth-classic/tree/1.x). Use v1 if you need the legacy architecture, React Native below 0.82, or Windows.
 
@@ -58,6 +58,7 @@ Every failure is a `BluetoothClassicError` with a `code`; see [docs/errors.md](.
 - [API reference](./docs/api.md)
 - [Connections and data](./docs/data.md)
 - [Error codes](./docs/errors.md)
+- [Android setup: permissions, manifest and Location Services](./docs/android.md)
 - [Migrating from v1](./docs/migration-v1-to-v2.md)
 
 ## Plan

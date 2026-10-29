@@ -29,8 +29,32 @@ android {
     minSdkVersion getExtOrDefault("minSdkVersion")
     targetSdkVersion getExtOrDefault("targetSdkVersion")
   }
+
+  testOptions {
+    unitTests {
+      includeAndroidResources = true
+    }
+  }
+}
+
+// Robolectric needs Java 21 to run the Android 15+ (API 35+) framework, and
+// access to FileDescriptor internals for API 36. The tests aren't published,
+// so apps that include the library are unaffected.
+if (file("src/test").exists()) {
+  tasks.withType(Test).configureEach {
+    javaLauncher = javaToolchains.launcherFor {
+      languageVersion = JavaLanguageVersion.of(21)
+    }
+    jvmArgs "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED"
+  }
 }
 
 dependencies {
   implementation "com.facebook.react:react-android"
+  // ContextCompat.registerReceiver flags and LocationManagerCompat.
+  implementation "androidx.core:core:1.13.1"
+
+  testImplementation "junit:junit:4.13.2"
+  testImplementation "org.robolectric:robolectric:4.17"
+  testImplementation "androidx.test:core:1.7.0"
 }

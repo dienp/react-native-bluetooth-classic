@@ -73,6 +73,12 @@ Run the unit tests:
 yarn test
 ```
 
+Run the Android unit tests. They use Robolectric to emulate every API band from 24 to 36, need JDK 21 and the Android SDK, and run through the example app's Gradle project:
+
+```sh
+yarn test:android
+```
+
 ### Specs first
 
 Behavior is specified with [OpenSpec](https://github.com/Fission-AI/OpenSpec) under [`openspec/`](./openspec). A change to observable behavior (public API, error codes, events, platform support) starts by updating the relevant spec, and `yarn openspec:validate` must pass. The v2 rework is tracked in [`openspec/changes/rework-v2-new-architecture/tasks.md`](./openspec/changes/rework-v2-new-architecture/tasks.md).
@@ -94,6 +100,7 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn typecheck`: type-check files with TypeScript.
 - `yarn lint`: lint files with [ESLint](https://eslint.org/).
 - `yarn test`: run the unit tests with [Jest](https://jestjs.io/).
+- `yarn test:android`: run the Android unit tests with [Robolectric](https://robolectric.org/).
 - `yarn openspec:validate`: validate the OpenSpec specs and changes.
 - `yarn example start`: start the Metro server for the example app.
 - `yarn example android`: run the example app on Android.
