@@ -103,9 +103,9 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
 
 ## 5. Android discovery and pairing
 
-- [ ] 5.1 Implement Android device mapping: upper-case `id`/`address`, `bondState`, `type`, `deviceClass`, `rssi` only from discovery, and address validation that rejects `INVALID_ARGUMENT`. Verify with JVM tests and Jest (frozen objects) for the "Android device objects" scenarios.
-- [ ] 5.2 Implement `getBondedDevices()` with permission and adapter preconditions. Verify with Robolectric tests, including `PERMISSION_DENIED` on API 31+ and `BLUETOOTH_DISABLED`.
-- [ ] 5.3 Implement `DiscoverySession`:
+- [x] 5.1 Implement Android device mapping: upper-case `id`/`address`, `bondState`, `type`, `deviceClass`, `rssi` only from discovery, and address validation that rejects `INVALID_ARGUMENT`. Verify with JVM tests and Jest (frozen objects) for the "Android device objects" scenarios.
+- [x] 5.2 Implement `getBondedDevices()` with permission and adapter preconditions. Verify with Robolectric tests, including `PERMISSION_DENIED` on API 31+ and `BLUETOOTH_DISABLED`.
+- [x] 5.3 Implement `DiscoverySession`:
   - start, de-duplication by address, `onDeviceFound`
   - `timeoutMs`, `cancelDiscovery()`
   - finish on `ACTION_DISCOVERY_FINISHED`
@@ -113,7 +113,7 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
   - no dependence on the host lifecycle
 
   Verify with Robolectric tests for every `device-discovery` Android scenario, including the app being paused mid-session.
-- [ ] 5.4 Implement `pair()`:
+- [x] 5.4 Implement `pair()`:
   - the receiver is registered before `createBond`
   - the address filter
   - `BONDED` and `NONE` handling
@@ -122,8 +122,8 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
   - immediate `PAIRING_FAILED` when `createBond` returns false
 
   Verify with Robolectric tests for every `device-pairing` "Pair" scenario.
-- [ ] 5.5 Implement `unpair()`: `removeBond()` through reflection on every API level (no release makes it public), rejecting `UNSUPPORTED_ON_PLATFORM` when the OS blocks it. Verify with Robolectric tests at API 33 and 36.
-- [ ] 5.6 Implement `onBondStateChange` and `onBondLost` (API 36+, using `ACTION_KEY_MISSING`). Verify with Robolectric tests at API 35 and 36.
+- [x] 5.5 Implement `unpair()`: `removeBond()` through reflection on every API level (no release makes it public), rejecting `UNSUPPORTED_ON_PLATFORM` when the OS blocks it. Verify with Robolectric tests at API 33 and 36.
+- [x] 5.6 Implement `onBondStateChange` and `onBondLost` (API 36+, using `ACTION_KEY_MISSING`). Verify with Robolectric tests at API 35 and 36.
 - [ ] 5.7 Add the discovery and pairing sections to `docs/android.md`, and the discovery and pairing screens to the example app. Verify the example builds on both RN lanes and the screens show results from the fake in a Detox-free smoke test (Jest render).
 
 ## 6. Android connections and data
