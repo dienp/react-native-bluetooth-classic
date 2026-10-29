@@ -10,7 +10,7 @@ PLATFORM="${2:?platform (android|ios) required}"
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 WORK_DIR="${RUNNER_TEMP:-$(mktemp -d)}"
 APP_NAME="RNBCTestApp"
-TARBALL="$WORK_DIR/react-native-bluetooth-classic.tgz"
+TARBALL="$WORK_DIR/dynlabs-react-native-bluetooth-classic.tgz"
 
 cd "$ROOT"
 yarn prepare

@@ -36,10 +36,12 @@
     "prepare": "bob build",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
-    "test": "jest --passWithNoTests",
+    "test": "jest",
     "openspec:validate": "openspec validate --all --strict",
     "release": "release-it",
-    "release:rc": "release-it --preRelease=rc --npm.tag=next"
+    "release:rc": "release-it --preRelease=rc --npm.tag=next",
+    "errors:generate": "node scripts/generate-error-codes.mjs",
+    "errors:check": "node scripts/generate-error-codes.mjs --check"
   },
   "keywords": [
     "react-native",
@@ -116,9 +118,17 @@
     "roots": [
       "<rootDir>/src"
     ],
+    "testMatch": [
+      "<rootDir>/src/**/__tests__/**/*.test.ts"
+    ],
     "modulePathIgnorePatterns": [
       "<rootDir>/example/node_modules",
       "<rootDir>/lib/"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/**/__tests__/**",
+      "!src/specs/**"
     ]
   },
   "react-native-builder-bob": {

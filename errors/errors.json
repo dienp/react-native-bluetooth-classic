@@ -1,0 +1,200 @@
+{
+  "$comment": "Single source of truth for error codes. Run `yarn errors:generate` after editing; CI runs `yarn errors:check`.",
+  "categories": [
+    {
+      "name": "Setup and adapter",
+      "codes": [
+        {
+          "code": "MODULE_NOT_LINKED",
+          "description": "The native module is not registered in this build.",
+          "troubleshooting": "Rebuild the app after installing or upgrading the package. Expo Go is not supported; use a development build."
+        },
+        {
+          "code": "UNSUPPORTED_ON_PLATFORM",
+          "description": "The current platform or OS release cannot perform the operation.",
+          "troubleshooting": "Check `getCapabilities()` before calling platform-specific APIs. iOS has no discovery, pairing, server sockets or adapter state."
+        },
+        {
+          "code": "INVALID_ARGUMENT",
+          "description": "An argument or option is missing, unknown, of the wrong type or out of range.",
+          "troubleshooting": "The message names the offending argument or option key. Option keys are camelCase; v1 keys such as `DELIMITER` are rejected."
+        },
+        {
+          "code": "BLUETOOTH_UNAVAILABLE",
+          "description": "The device has no Bluetooth hardware.",
+          "troubleshooting": "Hide Bluetooth features on this device."
+        },
+        {
+          "code": "BLUETOOTH_DISABLED",
+          "description": "Bluetooth is switched off.",
+          "troubleshooting": "Ask the user to turn Bluetooth on, for example with `requestEnable()` on Android."
+        },
+        {
+          "code": "PERMISSION_DENIED",
+          "description": "A runtime permission required by the operation is not granted.",
+          "troubleshooting": "`missingPermissions` lists what is missing. Call `requestPermissions(scope)` first."
+        },
+        {
+          "code": "LOCATION_SERVICES_DISABLED",
+          "description": "Android 7-11 (API 24-30) only returns discovery results while Location Services is switched on.",
+          "troubleshooting": "Ask the user to switch on Location Services, then retry discovery."
+        },
+        {
+          "code": "USER_REJECTED",
+          "description": "The user declined a system prompt or dismissed a picker.",
+          "troubleshooting": "Explain why the action is needed before asking again."
+        },
+        {
+          "code": "ACTIVITY_UNAVAILABLE",
+          "description": "No Android activity is in the foreground to show a system prompt or screen.",
+          "troubleshooting": "Call the API while the app is in the foreground."
+        },
+        {
+          "code": "UNKNOWN",
+          "description": "An unexpected failure with no specific mapping.",
+          "troubleshooting": "Inspect `nativeCode` and `nativeMessage`, and report the issue with debug logs."
+        }
+      ]
+    },
+    {
+      "name": "Discovery and pairing",
+      "codes": [
+        {
+          "code": "DEVICE_NOT_FOUND",
+          "description": "The requested device or accessory could not be found.",
+          "troubleshooting": "Make sure the device is powered on, in range and discoverable."
+        },
+        {
+          "code": "DISCOVERY_ALREADY_RUNNING",
+          "description": "A discovery session started by the library is already running.",
+          "troubleshooting": "Wait for the running session to finish, or call `cancelDiscovery()`."
+        },
+        {
+          "code": "DISCOVERY_FAILED",
+          "description": "The OS refused to start discovery.",
+          "troubleshooting": "Retry after a short delay; check `nativeMessage` for the OS reason."
+        },
+        {
+          "code": "PAIRING_IN_PROGRESS",
+          "description": "A pairing started by the library for the same device is still pending.",
+          "troubleshooting": "Await the pending `pair()` call."
+        },
+        {
+          "code": "PAIRING_FAILED",
+          "description": "Bonding ended without a bond, or the OS refused to start bonding.",
+          "troubleshooting": "The user may have declined or entered a wrong PIN. Retry, or pair from system settings."
+        },
+        {
+          "code": "PAIRING_TIMEOUT",
+          "description": "Bonding did not finish within the timeout.",
+          "troubleshooting": "Increase `timeoutMs` or retry with the device closer."
+        }
+      ]
+    },
+    {
+      "name": "Connections and data",
+      "codes": [
+        {
+          "code": "CONNECT_FAILED",
+          "description": "The connection attempt failed.",
+          "troubleshooting": "`nativeMessage` carries the OS reason. On Android, try `android.transport: 'insecure'` or `android.fallbackChannel`."
+        },
+        {
+          "code": "CONNECT_TIMEOUT",
+          "description": "The connection attempt did not complete within the timeout.",
+          "troubleshooting": "Make sure the device is in range and accepts connections, or increase `timeoutMs`."
+        },
+        {
+          "code": "CONNECT_CANCELLED",
+          "description": "The connection attempt was cancelled through its abort signal.",
+          "troubleshooting": "No action needed."
+        },
+        {
+          "code": "ALREADY_CONNECTED",
+          "description": "A connection to the same target already exists.",
+          "troubleshooting": "Use `getConnection(error.connectionId)` to reuse the existing connection."
+        },
+        {
+          "code": "ALREADY_CONNECTING",
+          "description": "A connection attempt to the same target is already pending.",
+          "troubleshooting": "Await the pending `connect()` call."
+        },
+        {
+          "code": "NOT_CONNECTED",
+          "description": "The connection has already ended.",
+          "troubleshooting": "Connect again before writing."
+        },
+        {
+          "code": "CONNECTION_LOST",
+          "description": "The connection ended because of an unexpected local failure.",
+          "troubleshooting": "Reconnect; inspect `nativeMessage` if it keeps happening."
+        },
+        {
+          "code": "ACCEPT_FAILED",
+          "description": "Listening for incoming connections failed.",
+          "troubleshooting": "Check `nativeMessage`; another app may be listening on the same service."
+        },
+        {
+          "code": "ACCEPT_TIMEOUT",
+          "description": "No device connected within the accept timeout.",
+          "troubleshooting": "Call `accept()` again, or increase `timeoutMs`."
+        },
+        {
+          "code": "ACCEPT_CANCELLED",
+          "description": "The pending accept was cancelled.",
+          "troubleshooting": "No action needed."
+        },
+        {
+          "code": "ACCEPT_ALREADY_RUNNING",
+          "description": "Another accept is already pending.",
+          "troubleshooting": "Await the pending `accept()` or call `cancelAccept()`."
+        },
+        {
+          "code": "WRITE_FAILED",
+          "description": "The OS reported an error while writing; the connection has ended.",
+          "troubleshooting": "Reconnect and resend."
+        },
+        {
+          "code": "WRITE_TIMEOUT",
+          "description": "A write was not fully accepted within its timeout; the connection has ended.",
+          "troubleshooting": "The remote device stopped reading. Reconnect and resend."
+        },
+        {
+          "code": "READ_TIMEOUT",
+          "description": "No frame arrived within the read timeout.",
+          "troubleshooting": "The connection stays open; retry the read or resend the request."
+        },
+        {
+          "code": "BUFFER_OVERFLOW",
+          "description": "Received data exceeded the configured buffer limit.",
+          "troubleshooting": "Attach a data listener or reader sooner, or raise `maxBufferBytes` / `maxFrameBytes`."
+        }
+      ]
+    },
+    {
+      "name": "iOS accessories",
+      "codes": [
+        {
+          "code": "PROTOCOL_NOT_DECLARED",
+          "description": "The protocol is not listed in UISupportedExternalAccessoryProtocols.",
+          "troubleshooting": "Add the protocol to Info.plist (or the config plugin's `protocols` option) and rebuild."
+        },
+        {
+          "code": "PROTOCOL_NOT_SUPPORTED",
+          "description": "The accessory does not support the requested protocol.",
+          "troubleshooting": "Use one of the accessory's `protocolStrings`."
+        },
+        {
+          "code": "ACCESSORY_NOT_CONNECTED",
+          "description": "The accessory is not currently connected to the OS.",
+          "troubleshooting": "Accessory ids change on every reconnect; call `getConnectedAccessories()` again."
+        },
+        {
+          "code": "SESSION_OPEN_FAILED",
+          "description": "The OS refused to open a session with the accessory.",
+          "troubleshooting": "Another app may hold the session, or the accessory rejected it. Check `nativeMessage`."
+        }
+      ]
+    }
+  ]
+}
