@@ -38,6 +38,9 @@ jobs:
       - name: Validate OpenSpec changes
         run: yarn openspec:validate
 
+      - name: Check that every spec scenario is traced
+        run: node scripts/ci/check-traceability.mjs
+
   test:
     runs-on: ubuntu-latest
 
