@@ -1,12 +1,20 @@
 import { useState } from 'react';
-import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Button,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
+import { AccessoriesScreen } from './screens/AccessoriesScreen';
 import { ConnectScreen } from './screens/ConnectScreen';
 import { DiscoveryScreen } from './screens/DiscoveryScreen';
 import { EchoScreen } from './screens/EchoScreen';
 import { OverviewScreen } from './screens/OverviewScreen';
 import { PairingScreen } from './screens/PairingScreen';
 
-const SCREENS = {
+const ANDROID_SCREENS = {
   Overview: OverviewScreen,
   Discovery: DiscoveryScreen,
   Pairing: PairingScreen,
@@ -14,17 +22,25 @@ const SCREENS = {
   Echo: EchoScreen,
 };
 
-type ScreenName = keyof typeof SCREENS;
+// iOS has no discovery or pairing: MFi accessories come from the picker.
+const IOS_SCREENS = {
+  Overview: OverviewScreen,
+  Accessories: AccessoriesScreen,
+  Echo: EchoScreen,
+};
+
+const SCREENS: Record<string, () => React.JSX.Element> =
+  Platform.OS === 'ios' ? IOS_SCREENS : ANDROID_SCREENS;
 
 export default function App() {
-  const [screen, setScreen] = useState<ScreenName>('Overview');
-  const Screen = SCREENS[screen];
+  const [screen, setScreen] = useState('Overview');
+  const Screen = SCREENS[screen] ?? OverviewScreen;
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>@dynlabs/react-native-bluetooth-classic</Text>
       <View style={styles.tabs}>
-        {(Object.keys(SCREENS) as ScreenName[]).map((name) => (
+        {Object.keys(SCREENS).map((name) => (
           <Button
             key={name}
             title={name}

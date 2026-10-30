@@ -3,7 +3,7 @@
 //
 //   node scripts/generate-error-codes.mjs          write the generated files
 //   node scripts/generate-error-codes.mjs --check  fail if any file is stale
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -53,6 +53,14 @@ package kjd.reactnative.bluetooth
 /** Error codes shared with JavaScript. See docs/errors.md. */
 object ErrorCode {
 ${codes.map(({ code }) => `  const val ${code} = "${code}"`).join('\n')}
+}
+`;
+
+const swift = `${header('//')}
+
+/// Error codes shared with JavaScript. See docs/errors.md.
+enum ErrorCode {
+${codes.map(({ code }) => `  static let ${code} = "${code}"`).join('\n')}
 }
 `;
 
@@ -107,6 +115,7 @@ const outputs = {
   'src/errors/ErrorCode.ts': typescript,
   'android/src/main/java/kjd/reactnative/bluetooth/ErrorCode.kt': kotlin,
   'ios/RNBCErrorCode.h': objc,
+  'ios/Core/Sources/BluetoothClassicCore/ErrorCode.swift': swift,
   'docs/errors.md': markdown,
 };
 
@@ -122,6 +131,7 @@ for (const [file, contents] of Object.entries(outputs)) {
   if (check) {
     stale.push(file);
   } else {
+    mkdirSync(path.dirname(target), { recursive: true });
     writeFileSync(target, contents);
     console.log(`Wrote ${file}`);
   }

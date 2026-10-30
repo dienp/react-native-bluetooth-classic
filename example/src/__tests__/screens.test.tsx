@@ -4,6 +4,7 @@ import {
   installFakeNativeModule,
   uninstallFakeNativeModule,
 } from '../../../src/__fakes__/install';
+import { AccessoriesScreen } from '../screens/AccessoriesScreen';
 import { ConnectScreen } from '../screens/ConnectScreen';
 import { DiscoveryScreen } from '../screens/DiscoveryScreen';
 import { EchoScreen } from '../screens/EchoScreen';
@@ -104,4 +105,36 @@ test('the echo screen sends lines, shows replies and checks an echo', async () =
     );
   });
   expect(await screen.findByText(/^Echo OK: 66 bytes/)).toBeTruthy();
+});
+
+test('the accessories screen lists accessories, shows the picker and connects', async () => {
+  const fake = installFakeNativeModule({ os: 'ios', version: '27.0' });
+  fake.declaredProtocols = ['com.acme.serial'];
+  fake.connectAccessory({
+    id: '7',
+    name: 'Receipt printer',
+    protocolStrings: ['com.acme.serial'],
+  });
+  fake.pickerResponse = {
+    type: 'select',
+    accessory: {
+      id: '8',
+      name: 'Scanner',
+      protocolStrings: ['com.acme.serial'],
+    },
+  };
+
+  await render(<AccessoriesScreen />);
+  expect(await screen.findByText('Receipt printer')).toBeTruthy();
+
+  await fireEvent.press(screen.getByText('Show accessory picker'));
+  expect(
+    await screen.findByText('Accessory connected: Scanner (8)')
+  ).toBeTruthy();
+  expect(await screen.findByText('Scanner')).toBeTruthy();
+
+  await fireEvent.press(screen.getByText('Connect Receipt printer'));
+  expect(
+    await screen.findByText('Connected conn-1 with com.acme.serial')
+  ).toBeTruthy();
 });
