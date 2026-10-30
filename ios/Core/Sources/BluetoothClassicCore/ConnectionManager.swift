@@ -21,6 +21,8 @@ final class ConnectionManager {
   private let now: () -> Double
   private var nextId = 1
   private var sessions: [String: AccessorySession] = [:]
+  /** Session ids in the order they opened, for `getConnections()`. */
+  private var openOrder: [String] = []
   private var operations: [String: Operation] = [:]
   private var shutDown = false
 
@@ -131,6 +133,7 @@ final class ConnectionManager {
       switch result {
       case .success:
         self.sessions[session.id] = session
+        self.openOrder.append(session.id)
         Log.debug("Connection \(session.id) opened with \(protocolString)")
         operation.promise.resolve(session.toMap())
       case .failure(let error):
@@ -193,16 +196,18 @@ final class ConnectionManager {
 
   private func removed(_ session: AccessorySession) {
     // Only this session's own entry, never a newer one.
-    if sessions[session.id] === session { sessions[session.id] = nil }
+    if sessions[session.id] === session {
+      sessions[session.id] = nil
+      openOrder.removeAll { $0 == session.id }
+    }
   }
 
   // MARK: Connections
 
   func list(promise: Promise) {
     onExecutor(promise) {
-      promise.resolve(
-        $0.sessions.values.filter(\.isOpen).sorted { $0.connectedAt < $1.connectedAt }.map { $0.toMap() }
-      )
+      let manager = $0
+      promise.resolve(manager.openOrder.compactMap { manager.sessions[$0] }.filter(\.isOpen).map { $0.toMap() })
     }
   }
 
@@ -270,6 +275,7 @@ final class ConnectionManager {
       self.operations = [:]
       for session in self.sessions.values { session.shutdown() }
       self.sessions = [:]
+      self.openOrder = []
     }
   }
 }

@@ -44,8 +44,8 @@ internal class ConnectionManager(
 ) {
   private val lock = Any()
   private val nextId = AtomicInteger(1)
-  private val connections = ConcurrentHashMap<String, RfcommConnection>()
-  /** Guarded by [lock], like [connecting] and [accepting]. */
+  /** In opening order. Guarded by [lock], like [byAddress], [connecting] and [accepting]. */
+  private val connections = LinkedHashMap<String, RfcommConnection>()
   private val byAddress = HashMap<String, RfcommConnection>()
   private val connecting = HashMap<String, Operation>()
   private var accepting: Operation? = null
@@ -257,9 +257,11 @@ internal class ConnectionManager(
   }
 
   private fun removed(connection: RfcommConnection) {
-    connections.remove(connection.id, connection)
-    // Only this connection's own entry: a newer connection to the same address stays.
-    synchronized(lock) { byAddress.remove(connection.address, connection) }
+    // Only this connection's own entries: a newer connection to the same address stays.
+    synchronized(lock) {
+      connections.remove(connection.id, connection)
+      byAddress.remove(connection.address, connection)
+    }
   }
 
   // ---- Accept ----
@@ -332,11 +334,14 @@ internal class ConnectionManager(
 
   // ---- Connections ----
 
-  fun list(): List<Map<String, Any?>> = connections.values.filter { it.isOpen }.sortedBy { it.connectedAt }.map { it.toMap() }
+  /** Open connections, in the order they opened. */
+  fun list(): List<Map<String, Any?>> = synchronized(lock) { connections.values.filter { it.isOpen } }.map { it.toMap() }
+
+  private fun find(connectionId: String): RfcommConnection? = synchronized(lock) { connections[connectionId] }
 
   fun write(connectionId: String, data: ByteArray, timeoutMs: Long, promise: SafePromise) {
     val connection =
-      connections[connectionId]
+      find(connectionId)
         ?: throw BluetoothClassicException(
           ErrorCode.NOT_CONNECTED,
           "Connection $connectionId is not connected",
@@ -350,12 +355,12 @@ internal class ConnectionManager(
   }
 
   fun disconnect(connectionId: String, timeoutMs: Long, promise: SafePromise) {
-    val connection = connections[connectionId]
+    val connection = find(connectionId)
     if (connection == null) promise.resolve(null) else connection.disconnect(timeoutMs, promise)
   }
 
   fun closeWithError(connectionId: String, code: String, message: String) {
-    connections[connectionId]?.closeWithError(code, message)
+    find(connectionId)?.closeWithError(code, message)
   }
 
   // ---- Global terminations ----
@@ -365,7 +370,7 @@ internal class ConnectionManager(
     for (operation in operations.values.toList()) {
       operation.abort(BluetoothClassicException(ErrorCode.BLUETOOTH_DISABLED, "Bluetooth was turned off"))
     }
-    for (connection in connections.values.toList()) {
+    for (connection in synchronized(lock) { connections.values.toList() }) {
       connection.end(Terminal.error(ErrorCode.BLUETOOTH_DISABLED, "Bluetooth was turned off"))
     }
   }
@@ -374,9 +379,11 @@ internal class ConnectionManager(
   fun shutdown() {
     synchronized(lock) { shutDown = true }
     operations.values.toList().forEach(Operation::abandon)
-    connections.values.toList().forEach(RfcommConnection::shutdown)
-    connections.clear()
-    synchronized(lock) { byAddress.clear() }
+    synchronized(lock) { connections.values.toList() }.forEach(RfcommConnection::shutdown)
+    synchronized(lock) {
+      connections.clear()
+      byAddress.clear()
+    }
     workers.shutdownNow()
     scheduler.shutdown()
   }
