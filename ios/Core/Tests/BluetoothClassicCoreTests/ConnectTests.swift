@@ -121,6 +121,18 @@ final class ConnectTests: XCTestCase {
     XCTAssertEqual(harness.openIds(), [id])
   }
 
+  func testConnectionsAreListedInTheOrderTheyOpened() {
+    let harness = Harness()
+    var ids: [String] = []
+    for accessory in 1...8 {
+      harness.addAccessory(accessory)
+      // Every session opens at the same timestamp in the harness.
+      ids.append(harness.connected(String(accessory)).id)
+    }
+
+    XCTAssertEqual(harness.openIds(), ids)
+  }
+
   func testOneConnectionPerAccessoryAndProtocol() {
     let harness = Harness()
     harness.addAccessory(1, protocols: [Harness.serial, Harness.control])
