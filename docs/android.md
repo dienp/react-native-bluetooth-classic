@@ -2,7 +2,7 @@
 
 What the library needs from an Android app, and how it behaves on each Android release it supports (API 24–37).
 
-> Status: adapter state, permissions, `requestEnable()`, `openSettings()`, `setAdapterName()`, discovery, pairing and bond events are implemented natively. Connections still reject with `UNSUPPORTED_ON_PLATFORM`, and `getCapabilities().server` is `false` until they land.
+> Status: every Android API is implemented natively: adapter state, permissions, `requestEnable()`, `openSettings()`, `setAdapterName()`, discovery, pairing, bond events, connections, the server (`accept()`) and data transfer.
 
 ## Permissions by API level
 
@@ -147,6 +147,83 @@ Android has no public API for removing a bond on any release, so `unpair(address
 
 `onBondLost` fires on API 36 and later when the OS reports that a bonded device lost its keys, for example after a factory reset; `getCapabilities().bondLossEvents` is `true` there. On API 24–35 the subscription is accepted but never fires.
 
+## Connections
+
+`connect(address, options?)` opens an RFCOMM link and resolves with a `Connection` once it is `connected`. It needs the `'connect'` scope and Bluetooth on.
+
+```ts
+const connection = await connect('00:11:22:AA:BB:CC', {
+  timeoutMs: 10_000,
+  android: { transport: 'secure' },
+});
+```
+
+| Option                    | Default                                      | Effect                                                                                       |
+| ------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `timeoutMs`               | `15000`                                      | Closes the socket and rejects with `CONNECT_TIMEOUT`. A link the OS reports later is closed. |
+| `signal`                  | none                                         | Aborting closes the socket and rejects with `CONNECT_CANCELLED`.                             |
+| `android.transport`       | `'secure'`                                   | `'insecure'` opens an unauthenticated, unencrypted link, for devices that cannot pair.       |
+| `android.uuid`            | `00001101-0000-1000-8000-00805F9B34FB` (SPP) | The service the OS looks up on the device.                                                   |
+| `android.fallbackChannel` | none                                         | See [Fallback channel](#fallback-channel).                                                   |
+
+- **Discovery stops first.** A running discovery session slows down or breaks RFCOMM connects, so `connect()` ends it, and the pending `startDiscovery()` resolves with what it found, before the attempt starts.
+- **One connection per device.** A second `connect()` to the same address rejects with `ALREADY_CONNECTED`, and `error.connectionId` names the open connection. While an attempt is still pending, it rejects with `ALREADY_CONNECTING`.
+- **Every connection ends exactly once.** `onDisconnected` reports `'local'` after `disconnect()`, `'remote'` when the peer closes the link or it drops, and `'error'` when the library ends it. On API 37 a peer close reaches the app as end-of-stream rather than a read error; both are `'remote'`.
+
+### Fallback channel
+
+Some devices advertise their serial port wrongly or not at all, so the OS's lookup of the UUID fails although the port is listening. With `android: { fallbackChannel: n }` (1 to 30), a failed UUID attempt is followed by one attempt on RFCOMM channel `n`:
+
+- The first socket is closed before the retry, so at most one stays open.
+- If both attempts fail, `error.nativeMessage` holds both reasons: `uuid <uuid>: <reason>; channel <n>: <reason>`.
+- Without the option, the library never tries a channel.
+
+Android has no public API for channel sockets, so the retry uses the OS's hidden method. Where an Android build blocks it, the second attempt fails with `This Android release does not allow RFCOMM channel sockets`. Use the option only for a device you know listens on that channel.
+
+### Troubleshooting `CONNECT_FAILED`
+
+`error.nativeMessage` carries the OS's reason. With `setLogLevel('debug')`, the attempts also appear in `adb logcat -s RNBluetoothClassic`.
+
+| `nativeMessage` contains                                                | Usual cause                                                                                                     | What to try                                                                                                                                                                      |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `read failed, socket might closed or timeout`                           | The device is off, out of range, connected to another host, has no service with that UUID, or refused the link. | Check that the device is on and free, and the UUID it advertises. Pair first with `pair()`, or try `transport: 'insecure'` for a device that cannot pair. Try `fallbackChannel`. |
+| `uuid …: …; channel …: …`                                               | Both the UUID attempt and the fallback channel failed.                                                          | Read both reasons; the channel may be wrong.                                                                                                                                     |
+| `Could not create a channel` or `does not allow RFCOMM channel sockets` | The OS refused the fallback channel socket.                                                                     | Drop `fallbackChannel` and fix the UUID instead.                                                                                                                                 |
+
+### Writing and reading
+
+- **Writes** on one connection go out in call order on a dedicated thread, in 8 KiB chunks. `write()` resolves once the OS accepted every byte. An OS error rejects with `WRITE_FAILED` and ends the connection with that code. With `timeoutMs`, a write the device does not accept in time rejects with `WRITE_TIMEOUT` and ends the connection, because the stream position is then unknown; writes queued behind it reject with `NOT_CONNECTED`.
+- **Reads** run on another thread. Bytes reach JS in batches, at most 16 ms or 16 KiB after the OS made them readable, and never out of order.
+- **Bluetooth turning off** ends every connection with `'error'` and `BLUETOOTH_DISABLED`, and rejects pending `connect()` and `accept()` calls with the same code.
+
+### Write then disconnect
+
+`disconnect({ timeoutMs })` lets writes queued before it finish, then closes the link. So this is safe without awaiting the write:
+
+```ts
+connection.write(receipt);
+await connection.disconnect();
+```
+
+Writes still pending after `timeoutMs` (default 5000) reject with `NOT_CONNECTED`. Calling `disconnect()` again, or on a connection that already ended, resolves without effect.
+
+"Accepted by the OS" is not "received by the device": the OS may still be sending when the socket closes. If the device must have everything before you hang up, wait for its acknowledgement first.
+
+### Accepting connections
+
+`accept({ uuid?, serviceName?, transport?, timeoutMs?, signal? })` advertises a service and resolves with the first device that connects. It needs the `'server'` scope and Bluetooth on.
+
+- The listening socket closes as soon as `accept()` settles, whatever the outcome.
+- Without `timeoutMs` it waits until a device connects or it is cancelled. With it, it rejects with `ACCEPT_TIMEOUT`.
+- Only one `accept()` runs at a time; a second rejects with `ACCEPT_ALREADY_RUNNING`. `cancelAccept()`, or aborting `signal`, rejects it with `ACCEPT_CANCELLED`.
+- A failure to listen or to accept rejects with `ACCEPT_FAILED`, with the OS reason in `nativeMessage`.
+
+### Background and reloads
+
+Connections run on the library's own threads, not on the activity, so they stay open, and keep receiving data, while the app is in the background. They last as long as the process does; Android may kill a background process, so an app that must hold a link for a long time needs its own foreground service.
+
+When the JS runtime reloads, the library closes every socket and stops its threads without delivering anything to the new runtime. Connect again from the new runtime.
+
 ## Turning Bluetooth on
 
 `requestEnable()` shows the system "Turn on Bluetooth?" prompt:
@@ -173,7 +250,7 @@ if (permissions.granted && (await getAdapterState()) !== 'on') {
 
 ## Adapter state events
 
-`onAdapterStateChange` listens for system broadcasts on the application context, not the activity. It therefore keeps delivering transitions while the app is in the background or a system dialog covers it, as long as the JavaScript runtime is alive. When the runtime reloads, the library unregisters its receivers, stops discovery and drops pending requests, so nothing is delivered to the new runtime.
+`onAdapterStateChange` listens for system broadcasts on the application context, not the activity. It therefore keeps delivering transitions while the app is in the background or a system dialog covers it, as long as the JavaScript runtime is alive. When the runtime reloads, the library unregisters its receivers, stops discovery, closes connections and drops pending requests, so nothing is delivered to the new runtime.
 
 ## Logging
 
