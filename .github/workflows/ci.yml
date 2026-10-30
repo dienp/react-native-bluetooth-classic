@@ -171,6 +171,25 @@ jobs:
       - name: Build example for iOS
         run: yarn example build:ios
 
+  # XCTest for the Swift core (ios/Core) on an iOS simulator.
+  test-ios:
+    runs-on: macos-latest
+
+    env:
+      XCODE_VERSION: 26
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Use appropriate Xcode version
+        uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
+        with:
+          xcode-version: ${{ env.XCODE_VERSION }}
+
+      - name: Run the Swift core tests
+        run: scripts/ci/test-ios-core.sh
+
   # Minimum supported React Native: a fresh app that installs the packed library.
   build-min-rn:
     strategy:

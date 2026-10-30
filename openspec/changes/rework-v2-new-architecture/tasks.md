@@ -173,17 +173,17 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
 
 - [ ] 7.1 Implement `RNBluetoothClassic.mm`, subclassing the generated `SpecBase` and forwarding to the Swift `BluetoothClassicCore`, with an entry-point guard and an `ErrorMapper` built on the generated `ErrorCode.swift`. Verify with XCTest that mapped errors produce their codes and that no Objective-C or Swift error escapes.
 - [ ] 7.2 Implement `getCapabilities()` (with `declaredProtocols` read safely from Info.plist) and `setLogLevel`. Android-only APIs reject `UNSUPPORTED_ON_PLATFORM`, and subscribing to their events throws. Verify with XCTest, and with an example build whose Info.plist has no protocol key, that the app starts without crashing.
-- [ ] 7.3 Implement `AccessoryRegistry`: `getConnectedAccessories()` filtered by declared protocols, accessory objects, and `onAccessoryConnected`/`onAccessoryDisconnected`. Verify with XCTest using an injected accessory-manager adapter.
-- [ ] 7.4 Implement `showAccessoryPicker()`: a cancel rejects `USER_REJECTED`, not-found rejects `DEVICE_NOT_FOUND`, and any other failure rejects `UNKNOWN`. Verify with XCTest using an injected picker.
+- [x] 7.3 Implement `AccessoryRegistry`: `getConnectedAccessories()` filtered by declared protocols, accessory objects, and `onAccessoryConnected`/`onAccessoryDisconnected`. Verify with XCTest using an injected accessory-manager adapter.
+- [x] 7.4 Implement `showAccessoryPicker()`: a cancel rejects `USER_REJECTED`, not-found rejects `DEVICE_NOT_FOUND`, and any other failure rejects `UNKNOWN`. Verify with XCTest using an injected picker.
 - [ ] 7.5 Introduce the `AccessoryTransport` protocol, an `EASession` implementation on a dedicated I/O thread run loop, and a fake built from bound stream pairs. Verify with XCTest that all stream callbacks run on the I/O thread.
-- [ ] 7.6 Implement `connect()`:
+- [x] 7.6 Implement `connect()`:
   - protocol selection
   - `PROTOCOL_NOT_DECLARED`, `PROTOCOL_NOT_SUPPORTED`, `ACCESSORY_NOT_CONNECTED` and `SESSION_OPEN_FAILED`
   - resolving only when both streams are open, with `CONNECT_TIMEOUT` and cancellation
   - `ALREADY_CONNECTED` per accessory and protocol
 
   Verify with XCTest for every "Connect to an accessory on iOS" scenario.
-- [ ] 7.7 Implement the session data path:
+- [x] 7.7 Implement the session data path:
   - a coalesced read path with `seq`
   - a write queue drained only on `hasSpaceAvailable`
   - `WRITE_FAILED` and `WRITE_TIMEOUT`
