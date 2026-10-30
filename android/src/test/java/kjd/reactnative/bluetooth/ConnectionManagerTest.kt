@@ -61,6 +61,13 @@ internal class ConnectionManagerTest : ConnectionTest() {
   }
 
   @Test
+  fun `getConnections lists connections in the order they opened, even within one millisecond`() {
+    val ids = (1..8).map { connected("00:11:22:AA:BB:%02X".format(it)).first }
+
+    assertEquals(ids, openIds())
+  }
+
+  @Test
   fun `getConnections lists only connections that have not ended`() {
     val (first, firstSocket) = connected()
     val (second, _) = connected(other)
