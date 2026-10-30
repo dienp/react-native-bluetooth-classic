@@ -203,14 +203,14 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
 
 ## 8. Expo config plugin and Jest mock
 
-- [ ] 8.1 Implement the plugin in `plugin/src`:
+- [x] 8.1 Implement the plugin in `plugin/src`:
   - `withAndroidManifest` with the `neverForLocation` option
   - `withInfoPlist` with `protocols` and `iosBackgroundMode`
   - option validation and idempotent merges
 
   Verify with Jest fixture tests that running the plugin twice produces identical output, and that invalid options fail with the option named.
 - [ ] 8.2 Add the `app.plugin.js` entry and declare `@expo/config-plugins` as an optional peer dependency. Verify with a CI job that runs `npx expo prebuild` on a fixture Expo app and asserts the manifest and Info.plist entries.
-- [ ] 8.3 Publish the `@dynlabs/react-native-bluetooth-classic/jest` entry backed by `FakeNativeModule`, with control helpers (fake devices, push data, end connection, fail next call, read written bytes, platform emulation). Verify with type tests that the mock's types equal the real API, and with a consumer test in `example/__tests__`.
+- [x] 8.3 Publish the `@dynlabs/react-native-bluetooth-classic/jest` entry backed by `FakeNativeModule`, with control helpers (fake devices, push data, end connection, fail next call, read written bytes, platform emulation). Verify with type tests that the mock's types equal the real API, and with a consumer test in `example/__tests__`.
 - [ ] 8.4 Write `docs/expo.md` and `docs/testing.md`. Verify the sample test in `docs/testing.md` runs in CI.
 
 ## 9. Integration and release

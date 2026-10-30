@@ -171,6 +171,20 @@ jobs:
       - name: Build example for iOS
         run: yarn example build:ios
 
+  # The Expo config plugin through a real `expo prebuild`, run twice.
+  expo-prebuild:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      - name: Prebuild the fixture app and check the native config
+        run: scripts/ci/expo-prebuild.sh
+
   # XCTest for the Swift core (ios/Core) on an iOS simulator.
   test-ios:
     runs-on: macos-latest

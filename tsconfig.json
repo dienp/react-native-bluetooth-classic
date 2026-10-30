@@ -4,6 +4,9 @@
     "paths": {
       "@dynlabs/react-native-bluetooth-classic": [
         "./src/index"
+      ],
+      "@dynlabs/react-native-bluetooth-classic/jest": [
+        "./src/jest"
       ]
     },
     "allowUnreachableCode": false,
