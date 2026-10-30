@@ -23,7 +23,8 @@ if command -v swift >/dev/null 2>&1; then
 fi
 
 env="$(uname -s), Node $(node --version)"
-command -v java >/dev/null 2>&1 && env+=", $(java -version 2>&1 | head -1 | tr -d '"')"
+# JAVA_TOOL_OPTIONS makes the JVM print a "Picked up" line first; it is local setup, not the version.
+command -v java >/dev/null 2>&1 && env+=", $(java -version 2>&1 | grep -v '^Picked up' | head -1 | tr -d '"')"
 command -v swift >/dev/null 2>&1 && env+=", $(swift --version 2>/dev/null | head -1)"
 
 node scripts/test-report.mjs "${args[@]}" --env "$env"
