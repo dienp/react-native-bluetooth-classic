@@ -1,0 +1,10 @@
+{
+  "name": "rnbc-expo-fixture",
+  "private": true,
+  "version": "1.0.0",
+  "dependencies": {
+    "expo": "~58.0.21",
+    "react": "19.3.0",
+    "react-native": "0.88.1"
+  }
+}

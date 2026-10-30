@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "RNBC Fixture",
+    "slug": "rnbc-fixture",
+    "android": { "package": "dev.dynlabs.rnbcfixture" },
+    "ios": {
+      "bundleIdentifier": "dev.dynlabs.rnbcfixture",
+      "infoPlist": { "UIBackgroundModes": ["audio"] }
+    },
+    "plugins": [
+      [
+        "@dynlabs/react-native-bluetooth-classic",
+        { "protocols": ["com.acme.serial", "com.acme.update"], "iosBackgroundMode": true }
+      ]
+    ]
+  }
+}

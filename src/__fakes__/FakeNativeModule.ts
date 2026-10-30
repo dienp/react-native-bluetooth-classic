@@ -941,7 +941,7 @@ export class FakeNativeModule implements Spec {
   >();
   /** How writes behave: accepted, OS error, or never accepted. */
   writeBehavior: 'accept' | 'fail' | 'stall' = 'accept';
-  /** Called right after a connection opens, before `connect()` resolves. */
+  /** Called right after a connection opens, before `connect()` or `accept()` resolves. */
   onConnectionOpened: ((connectionId: string) => void) | undefined;
 
   /** Simulates a remote device connecting to a pending `accept()`. */
@@ -958,6 +958,7 @@ export class FakeNativeModule implements Spec {
       key,
       device: this.devices.get(key)!,
     });
+    this.onConnectionOpened?.(connection.id);
     pending.resolve(connection);
     return connection.id;
   }

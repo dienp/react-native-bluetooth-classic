@@ -10,6 +10,12 @@
       "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
     },
+    "./jest": {
+      "react-native-bluetooth-classic-source": "./src/jest.ts",
+      "types": "./lib/typescript/src/jest.d.ts",
+      "default": "./lib/module/jest.js"
+    },
+    "./app.plugin.js": "./app.plugin.js",
     "./package.json": "./package.json"
   },
   "sideEffects": false,
@@ -19,6 +25,8 @@
     "android",
     "ios",
     "*.podspec",
+    "app.plugin.js",
+    "plugin/build",
     "!ios/build",
     "!ios/Core/.build",
     "!ios/Core/.swiftpm",
@@ -37,7 +45,7 @@
   "scripts": {
     "example": "yarn workspace react-native-bluetooth-classic-example",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
-    "prepare": "bob build",
+    "prepare": "bob build && tsc -p plugin",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "test": "jest",
@@ -46,7 +54,8 @@
     "release": "release-it",
     "release:rc": "release-it --preRelease=rc --npm.tag=next",
     "errors:generate": "node scripts/generate-error-codes.mjs",
-    "errors:check": "node scripts/generate-error-codes.mjs --check"
+    "errors:check": "node scripts/generate-error-codes.mjs --check",
+    "build:plugin": "tsc -p plugin"
   },
   "keywords": [
     "react-native",
@@ -90,6 +99,7 @@
     "@eslint/compat": "^2.1.1",
     "@eslint/eslintrc": "^3.3.7",
     "@eslint/js": "^9.39.5",
+    "@expo/config-plugins": "^58.0.11",
     "@fission-ai/openspec": "1.15.0",
     "@react-native/babel-preset": "0.88.1",
     "@react-native/eslint-config": "0.88.1",
@@ -114,8 +124,14 @@
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
+    "@expo/config-plugins": "*",
     "react": "*",
     "react-native": ">=0.82.0"
+  },
+  "peerDependenciesMeta": {
+    "@expo/config-plugins": {
+      "optional": true
+    }
   },
   "workspaces": [
     "example"
@@ -125,11 +141,13 @@
     "preset": "@react-native/jest-preset",
     "roots": [
       "<rootDir>/src",
-      "<rootDir>/example/src"
+      "<rootDir>/example/src",
+      "<rootDir>/plugin/src"
     ],
     "testMatch": [
       "<rootDir>/src/**/__tests__/**/*.test.ts",
-      "<rootDir>/example/src/**/__tests__/**/*.test.tsx"
+      "<rootDir>/example/src/**/__tests__/**/*.test.{ts,tsx}",
+      "<rootDir>/plugin/src/**/__tests__/**/*.test.ts"
     ],
     "modulePathIgnorePatterns": [
       "<rootDir>/example/node_modules",
@@ -141,6 +159,7 @@
       "!src/specs/**"
     ],
     "moduleNameMapper": {
+      "^@dynlabs/react-native-bluetooth-classic/jest$": "<rootDir>/src/jest.ts",
       "^@dynlabs/react-native-bluetooth-classic$": "<rootDir>/src/index.ts",
       "^react$": "<rootDir>/node_modules/react",
       "^react/(.*)$": "<rootDir>/node_modules/react/$1",
