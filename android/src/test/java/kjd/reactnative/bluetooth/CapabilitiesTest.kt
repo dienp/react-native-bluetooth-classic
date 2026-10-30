@@ -12,7 +12,7 @@ import org.robolectric.annotation.Config
 @Config(sdk = [35, 36])
 class CapabilitiesTest : ModuleTest() {
   @Test
-  fun `reports the platform, the API level and the flags implemented so far`() {
+  fun `reports the platform, the API level and every Android flag`() {
     val capabilities = module.capabilitiesForTest()
 
     assertEquals("android", capabilities.getString("platform"))
@@ -23,8 +23,7 @@ class CapabilitiesTest : ModuleTest() {
     assertEquals(0, capabilities.getArray("declaredProtocols")!!.size())
     assertTrue(capabilities.getBoolean("discovery"))
     assertTrue(capabilities.getBoolean("pairing"))
-    // The server has not landed on Android yet.
-    assertFalse(capabilities.getBoolean("server"))
+    assertTrue(capabilities.getBoolean("server"))
     assertEquals(sdkInt >= 36, capabilities.getBoolean("bondLossEvents"))
   }
 

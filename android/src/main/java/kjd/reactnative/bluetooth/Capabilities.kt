@@ -11,8 +11,7 @@ internal enum class Feature {
 
 /** Builds the `getCapabilities()` result. The flags must match what the module actually does. */
 internal object Capabilities {
-  /** The server lands with task group 6. */
-  val LANDED: Set<Feature> = setOf(Feature.DISCOVERY, Feature.PAIRING)
+  val LANDED: Set<Feature> = setOf(Feature.DISCOVERY, Feature.PAIRING, Feature.SERVER)
 
   /** First API level whose OS reports that a remote device lost its bond keys. */
   const val BOND_LOSS_MIN_SDK = 36

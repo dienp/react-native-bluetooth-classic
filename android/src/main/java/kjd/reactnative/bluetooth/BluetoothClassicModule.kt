@@ -7,20 +7,24 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.util.Base64
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
+import java.util.UUID
 
 /**
  * The TurboModule. Every entry point wraps its promise in a [SafePromise] and
  * runs inside [guarded], so each call settles exactly once and no exception
- * reaches React Native. Connections still reject with
- * `UNSUPPORTED_ON_PLATFORM` until task group 6 lands.
+ * reaches React Native.
  */
 class BluetoothClassicModule
-internal constructor(reactContext: ReactApplicationContext, adapterProvider: (() -> BluetoothAdapter?)?) :
-  NativeBluetoothClassicSpec(reactContext) {
+internal constructor(
+  reactContext: ReactApplicationContext,
+  adapterProvider: (() -> BluetoothAdapter?)?,
+  transport: RfcommTransport? = null
+) : NativeBluetoothClassicSpec(reactContext) {
 
   constructor(reactContext: ReactApplicationContext) : this(reactContext, null)
 
@@ -35,6 +39,14 @@ internal constructor(reactContext: ReactApplicationContext, adapterProvider: (()
     EnableRequester(preconditions, permissions, { reactApplicationContext.currentActivity }, main)
   internal val discovery = DiscoveryManager(appContext, preconditions, permissions, main)
   internal val bonds = BondManager(appContext, preconditions, main)
+  internal val connections =
+    ConnectionManager(
+      transport ?: AndroidRfcommTransport { adapterMonitor.adapter },
+      ExecutorScheduler("RNBluetoothClassic-timer"),
+      ConnectionEmitter(),
+      adapterOn = { adapterMonitor.adapter?.state == BluetoothAdapter.STATE_ON },
+      deviceInfo = ::connectedDevice
+    )
 
   override fun initialize() {
     super.initialize()
@@ -44,6 +56,7 @@ internal constructor(reactContext: ReactApplicationContext, adapterProvider: (()
     adapterMonitor.addListener(enableRequester)
     adapterMonitor.addListener(discovery)
     adapterMonitor.addListener(bonds)
+    adapterMonitor.addListener { state, _ -> if (state != AdapterMonitor.ON) connections.adapterOff() }
     discovery.addListener { device ->
       emitOnDeviceFound(Writables.map(mapOf("device" to device, "timestamp" to now())))
     }
@@ -73,6 +86,7 @@ internal constructor(reactContext: ReactApplicationContext, adapterProvider: (()
     bonds.stop()
     reactApplicationContext.removeActivityEventListener(enableRequester)
     reactApplicationContext.removeLifecycleEventListener(permissions)
+    connections.shutdown()
     val cancel = Runnable {
       enableRequester.cancel()
       permissions.cancel()
@@ -176,31 +190,75 @@ internal constructor(reactContext: ReactApplicationContext, adapterProvider: (()
 
   override fun showAccessoryPicker(nameFilter: String?, promise: Promise) = iosOnly(promise, "showAccessoryPicker")
 
-  // ---- Connections (task group 6) ----
+  // ---- Connections ----
 
   override fun connect(operationId: String, deviceId: String, options: ReadableMap, promise: Promise) =
-    notImplemented(promise, "connect")
+    entryOnMain(promise, "connect") { safe ->
+      val address = DeviceMapper.requireAddress(deviceId)
+      val connectOptions = parseConnectOptions(options)
+      preconditions.requireAdapter(PermissionScope.CONNECT)
+      // Discovery slows down or breaks RFCOMM connects, so it stops first.
+      connections.connect(operationId, address, connectOptions, safe, beforeAttempt = discovery::stop)
+    }
 
   override fun accept(operationId: String, options: ReadableMap, promise: Promise) =
-    notImplemented(promise, "accept")
+    entry(promise, "accept") { safe ->
+      val acceptOptions = parseAcceptOptions(options)
+      preconditions.requireAdapter(PermissionScope.SERVER)
+      connections.accept(operationId, acceptOptions, safe)
+    }
 
   override fun cancelOperation(operationId: String, promise: Promise) =
-    notImplemented(promise, "cancelOperation")
+    entry(promise, "cancelOperation") {
+      connections.cancelOperation(operationId)
+      it.resolve(null)
+    }
 
   override fun cancelAccept(promise: Promise) =
-    notImplemented(promise, "cancelAccept")
+    entry(promise, "cancelAccept") {
+      connections.cancelAccept()
+      it.resolve(null)
+    }
 
   override fun getConnections(promise: Promise) =
-    entry(promise, "getConnections") { it.resolve(Writables.array(emptyList<Any>())) }
+    entry(promise, "getConnections") { it.resolve(Writables.array(connections.list())) }
 
   override fun write(connectionId: String, data: String, timeoutMs: Double, promise: Promise) =
-    notImplemented(promise, "write")
+    entry(promise, "write") { safe ->
+      val bytes =
+        try {
+          Base64.decode(data, Base64.DEFAULT)
+        } catch (e: IllegalArgumentException) {
+          throw BluetoothClassicException(ErrorCode.INVALID_ARGUMENT, "data must be base64", cause = e)
+        }
+      Logger.debug { "write ${bytes.size} bytes to $connectionId" }
+      connections.write(connectionId, bytes, timeoutMs.toLong(), safe)
+    }
 
   override fun disconnect(connectionId: String, timeoutMs: Double, promise: Promise) =
-    notImplemented(promise, "disconnect")
+    entry(promise, "disconnect") { connections.disconnect(connectionId, timeoutMs.toLong(), it) }
 
   override fun closeWithError(connectionId: String, code: String, message: String, promise: Promise) =
-    notImplemented(promise, "closeWithError")
+    entry(promise, "closeWithError") {
+      connections.closeWithError(connectionId, code, message)
+      it.resolve(null)
+    }
+
+  private inner class ConnectionEmitter : RfcommConnection.Events {
+    override fun onStateChange(connectionId: String, state: String, previousState: String, terminal: Terminal?) =
+      emitOnConnectionStateChange(
+        Writables.map(connectionStateEvent(connectionId, state, previousState, terminal, System.currentTimeMillis()))
+      )
+
+    override fun onData(connectionId: String, data: ByteArray, seq: Int) {
+      Logger.debug { "read ${data.size} bytes from $connectionId (seq $seq)" }
+      emitOnData(Writables.map(dataEvent(connectionId, data, seq)))
+    }
+  }
+
+  @SuppressLint("MissingPermission") // Connect and accept check BLUETOOTH_CONNECT first.
+  private fun connectedDevice(address: String): Map<String, Any?> =
+    adapterMonitor.adapter?.getRemoteDevice(address)?.let { DeviceMapper.toMap(it) } ?: DeviceMapper.bare(address)
 
   // ---- Helpers ----
 
@@ -217,11 +275,6 @@ internal constructor(reactContext: ReactApplicationContext, adapterProvider: (()
     }
   }
 
-  private fun notImplemented(promise: Promise, operation: String) =
-    entry(promise, operation) {
-      throw BluetoothClassicException(ErrorCode.UNSUPPORTED_ON_PLATFORM, NOT_IMPLEMENTED_MESSAGE)
-    }
-
   private fun iosOnly(promise: Promise, operation: String) =
     entry(promise, operation) {
       throw BluetoothClassicException(ErrorCode.UNSUPPORTED_ON_PLATFORM, "$operation() is only available on iOS")
@@ -230,10 +283,93 @@ internal constructor(reactContext: ReactApplicationContext, adapterProvider: (()
   companion object {
     const val NAME = NativeBluetoothClassicSpec.NAME
     const val MAX_ADAPTER_NAME_BYTES = 248
-    private const val NOT_IMPLEMENTED_MESSAGE =
-      "Not implemented yet in this @dynlabs/react-native-bluetooth-classic v2 pre-release"
+    /** RFCOMM channels are 1 to 30. */
+    private val CHANNELS = 1..30
 
     private fun now() = System.currentTimeMillis().toDouble()
+
+    internal fun parseConnectOptions(options: ReadableMap): ConnectOptions {
+      val fallbackChannel =
+        if (options.hasKey("fallbackChannel") && !options.isNull("fallbackChannel")) {
+          val value = options.getDouble("fallbackChannel")
+          if (value % 1.0 != 0.0 || value.toInt() !in CHANNELS) {
+            throw BluetoothClassicException(ErrorCode.INVALID_ARGUMENT, "fallbackChannel must be an integer from 1 to 30")
+          }
+          value.toInt()
+        } else {
+          null
+        }
+      return ConnectOptions(
+        timeoutMs = optionalLong(options, "timeoutMs") ?: 0,
+        secure = parseTransport(options),
+        uuid = parseUuid(options),
+        fallbackChannel = fallbackChannel
+      )
+    }
+
+    internal fun parseAcceptOptions(options: ReadableMap): AcceptOptions =
+      AcceptOptions(
+        timeoutMs = optionalLong(options, "timeoutMs") ?: 0,
+        secure = parseTransport(options),
+        uuid = parseUuid(options),
+        serviceName = optionalString(options, "serviceName") ?: AcceptOptions.DEFAULT_SERVICE_NAME
+      )
+
+    private fun parseTransport(options: ReadableMap): Boolean =
+      when (val transport = optionalString(options, "transport")) {
+        null, "secure" -> true
+        "insecure" -> false
+        else -> throw BluetoothClassicException(ErrorCode.INVALID_ARGUMENT, "Unknown transport: $transport")
+      }
+
+    private fun parseUuid(options: ReadableMap): UUID {
+      val uuid = optionalString(options, "uuid") ?: return RfcommTransport.SPP_UUID
+      return try {
+        UUID.fromString(uuid)
+      } catch (e: IllegalArgumentException) {
+        throw BluetoothClassicException(ErrorCode.INVALID_ARGUMENT, "Invalid uuid: $uuid", cause = e)
+      }
+    }
+
+    private fun optionalString(options: ReadableMap, key: String): String? =
+      if (options.hasKey(key) && !options.isNull(key)) options.getString(key) else null
+
+    private fun optionalLong(options: ReadableMap, key: String): Long? =
+      if (options.hasKey(key) && !options.isNull(key)) options.getDouble(key).toLong() else null
+
+    internal fun connectionStateEvent(
+      connectionId: String,
+      state: String,
+      previousState: String,
+      terminal: Terminal?,
+      timestamp: Long
+    ): Map<String, Any?> {
+      val event =
+        mutableMapOf<String, Any?>(
+          "connectionId" to connectionId,
+          "state" to state,
+          "previousState" to previousState,
+          "timestamp" to timestamp.toDouble()
+        )
+      if (terminal != null) {
+        event["reason"] = terminal.reason
+        terminal.code?.let { event["errorCode"] = it }
+        terminal.message?.let { event["errorMessage"] = it }
+        terminal.cause?.let { cause ->
+          event["nativeCode"] = cause.javaClass.name
+          cause.message?.let { event["nativeMessage"] = it }
+        }
+      }
+      return event
+    }
+
+    /** Base64 happens here, with `android.util.Base64`, because `java.util.Base64` needs API 26. */
+    internal fun dataEvent(connectionId: String, data: ByteArray, seq: Int): Map<String, Any?> =
+      mapOf(
+        "connectionId" to connectionId,
+        "data" to Base64.encodeToString(data, Base64.NO_WRAP),
+        "seq" to seq.toDouble()
+      )
 
     internal fun adapterStateEvent(state: String, previousState: String, timestamp: Long): Map<String, Any> =
       mapOf("state" to state, "previousState" to previousState, "timestamp" to timestamp.toDouble())

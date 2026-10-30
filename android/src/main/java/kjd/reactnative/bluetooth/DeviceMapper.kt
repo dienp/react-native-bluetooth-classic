@@ -29,6 +29,17 @@ internal object DeviceMapper {
     return map
   }
 
+  /** A device the OS could not describe, with only its address known. */
+  fun bare(address: String): Map<String, Any?> =
+    mapOf(
+      "id" to address,
+      "address" to address,
+      "name" to null,
+      "bondState" to "none",
+      "type" to "unknown",
+      "deviceClass" to null
+    )
+
   fun bondStateName(state: Int): String =
     when (state) {
       BluetoothDevice.BOND_BONDED -> "bonded"

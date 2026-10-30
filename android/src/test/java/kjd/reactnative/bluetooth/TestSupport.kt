@@ -18,6 +18,8 @@ import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import org.junit.After
 import org.junit.Before
 import org.robolectric.Robolectric
@@ -31,36 +33,56 @@ fun useJavaOnlyWritables() {
   Writables.createArray = { JavaOnlyArray() }
 }
 
-/** Records how a promise settled, and how many times anything tried to settle it. */
+/**
+ * Records how a promise settled, and how many times anything tried to settle
+ * it. Safe to settle from any thread; [await] waits for the first settle.
+ */
 class RecordingPromise : Promise {
-  var settleCount = 0
+  @Volatile var settleCount = 0
     private set
-  var resolved = false
+  @Volatile var resolved = false
     private set
-  var value: Any? = null
+  @Volatile var value: Any? = null
     private set
-  var code: String? = null
+  @Volatile var code: String? = null
     private set
-  var message: String? = null
+  @Volatile var message: String? = null
     private set
-  var userInfo: ReadableMap? = null
+  @Volatile var userInfo: ReadableMap? = null
     private set
+  private val settled = CountDownLatch(1)
 
   val isSettled: Boolean
     get() = settleCount > 0
 
+  @Synchronized
   override fun resolve(value: Any?) {
+    if (settleCount == 0) {
+      resolved = true
+      this.value = value
+    }
     settleCount++
-    resolved = true
-    this.value = value
+    settled.countDown()
   }
 
+  @Synchronized
   private fun fail(code: String?, message: String?, userInfo: WritableMap?) {
+    if (settleCount == 0) {
+      this.code = code
+      this.message = message
+      this.userInfo = userInfo
+    }
     settleCount++
-    this.code = code
-    this.message = message
-    this.userInfo = userInfo
+    settled.countDown()
   }
+
+  /** Waits until the promise settles, or fails the test after [timeoutMs]. */
+  fun await(timeoutMs: Long = 5_000): RecordingPromise {
+    if (!settled.await(timeoutMs, TimeUnit.MILLISECONDS)) throw AssertionError("The promise did not settle in $timeoutMs ms")
+    return this
+  }
+
+  fun nativeMessage(): String? = userInfo?.getString("nativeMessage")
 
   override fun reject(code: String?, message: String?) = fail(code, message, null)
 
@@ -120,6 +142,9 @@ abstract class ModuleTest {
   /** Overridden by tests that need a different adapter, or none. */
   protected open fun adapterProvider(): (() -> BluetoothAdapter?)? = null
 
+  /** Overridden by tests that script RFCOMM sockets. */
+  internal open fun transport(): RfcommTransport? = null
+
   @Before
   fun setUpModule() {
     useJavaOnlyWritables()
@@ -127,7 +152,7 @@ abstract class ModuleTest {
     app = ApplicationProvider.getApplicationContext()
     reactContext = BridgeReactContext(app)
     shadowOf(adapter).setState(BluetoothAdapter.STATE_ON)
-    module = BluetoothClassicModule(reactContext, adapterProvider())
+    module = BluetoothClassicModule(reactContext, adapterProvider(), transport())
     module.initialize()
   }
 
