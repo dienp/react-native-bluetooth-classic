@@ -1,6 +1,6 @@
 # Connections and data
 
-> Android implements this contract natively. The iOS module is still a stub in this v2 pre-release.
+> Android and iOS implement this contract natively; see [android.md](./android.md#connections) and [ios.md](./ios.md#data) for what differs.
 
 ## Connecting
 
