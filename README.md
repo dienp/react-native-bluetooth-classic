@@ -25,7 +25,7 @@ yarn add @dynlabs/react-native-bluetooth-classic
 cd ios && pod install
 ```
 
-Rebuild the app after installing. Expo apps need a development build (Expo Go is not supported); the bundled config plugin is planned (task group 8).
+Rebuild the app after installing. Expo apps need a development build (Expo Go is not supported) and the bundled config plugin; see [docs/expo.md](./docs/expo.md).
 
 ## Quick start
 
@@ -60,6 +60,8 @@ Every failure is a `BluetoothClassicError` with a `code`; see [docs/errors.md](.
 - [Error codes](./docs/errors.md)
 - [Android: permissions, manifest, discovery, pairing and connections](./docs/android.md)
 - [iOS: MFi accessories, Info.plist, the picker and sessions](./docs/ios.md)
+- [Expo: the config plugin](./docs/expo.md)
+- [Testing: the Jest mock](./docs/testing.md)
 - [Migrating from v1](./docs/migration-v1-to-v2.md)
 
 ## Plan
