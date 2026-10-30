@@ -41,6 +41,21 @@ internal class ReadLoopTest : ConnectionTest() {
     assertEquals(Terminal.REMOTE, terminal.reason)
     assertNull(terminal.code)
     never { events.terminals(id).size > 1 }
+    // A lost link skips disconnecting.
+    assertEquals(listOf("state:connected->disconnected"), events.logOf(id))
+  }
+
+  @Test
+  fun `an unexpected failure in the read loop ends the connection with CONNECTION_LOST`() {
+    val (id, socket) = connected()
+
+    socket.crashReads(IllegalStateException("parcel corrupted"))
+
+    val terminal = events.awaitTerminal(id)
+    assertEquals(Terminal.ERROR, terminal.reason)
+    assertEquals(ErrorCode.CONNECTION_LOST, terminal.code)
+    assertTrue(terminal.cause is IllegalStateException)
+    socket.awaitClosed()
   }
 
   @Test

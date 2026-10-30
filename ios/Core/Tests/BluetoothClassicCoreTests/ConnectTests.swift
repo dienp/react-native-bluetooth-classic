@@ -16,6 +16,17 @@ final class ConnectTests: XCTestCase {
     XCTAssertEqual(recorded.map["protocol"] as? String, Harness.control)
   }
 
+  func testAnExplicitProtocolIsTheOneTheSessionOpensWith() {
+    let harness = Harness()
+    harness.addAccessory(1, protocols: [Harness.serial, Harness.control])
+
+    let recorded = harness.connect("1", protocolString: Harness.control)
+    harness.transport.last.completeOpen()
+
+    XCTAssertEqual(harness.transport.sessions.single?.protocolString, Harness.control)
+    XCTAssertEqual(recorded.map["protocol"] as? String, Harness.control)
+  }
+
   func testConnectResolvesOnlyOnceBothStreamsAreOpen() {
     let harness = Harness()
     harness.addAccessory(1)

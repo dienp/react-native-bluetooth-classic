@@ -26,7 +26,9 @@ android {
   compileSdkVersion getExtOrDefault("compileSdkVersion")
 
   defaultConfig {
-    minSdkVersion getExtOrDefault("minSdkVersion")
+    // The library's own floor, never the host's: an app below it must fail the
+    // manifest merge with a message naming API 24, not inherit a lower minimum.
+    minSdkVersion RNBluetoothClassic.minSdkVersion
     targetSdkVersion getExtOrDefault("targetSdkVersion")
   }
 

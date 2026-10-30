@@ -228,6 +228,13 @@ class PermissionGateTest : ModuleTest() {
   }
 
   @Test
+  fun `requesting the connect scope without a foreground activity is ACTIVITY_UNAVAILABLE when a prompt is needed`() {
+    assumeTrue(sdkInt >= 31)
+
+    assertEquals(ErrorCode.ACTIVITY_UNAVAILABLE, call { module.requestPermissions("connect", it) }.code)
+  }
+
+  @Test
   fun `requesting without a foreground activity is ACTIVITY_UNAVAILABLE`() {
     val promise = call { module.requestPermissions("discovery", it) }
 

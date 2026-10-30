@@ -29,6 +29,24 @@ final class SessionDataTests: XCTestCase {
     XCTAssertEqual(harness.named("onData").map { $0["seq"] as? Int }, [0, 1])
   }
 
+  func testBurstsArriveCompleteInOrderWithContiguousSeqNumbers() {
+    let (id, streams) = harness.connected()
+    let payload = (0..<10_000).map { UInt8(($0 * 7) & 0xFF) }
+
+    var offset = 0
+    while offset < payload.count {
+      let end = min(offset + 997, payload.count)
+      streams.receive(Array(payload[offset..<end]))
+      harness.executor.advance(AccessorySession.batchDelay / 2)
+      offset = end
+    }
+    harness.executor.advance(AccessorySession.batchDelay)
+
+    XCTAssertEqual(harness.received(id), payload)
+    let seqs = harness.named("onData").compactMap { $0["seq"] as? Int }
+    XCTAssertEqual(seqs, Array(0..<seqs.count))
+  }
+
   func testABatchIsEmittedAtOnceWhenItReaches16KiB() {
     let (id, streams) = harness.connected()
     let payload = (0..<AccessorySession.batchBytes).map { UInt8($0 & 0xFF) }
@@ -249,6 +267,8 @@ final class SessionDataTests: XCTestCase {
     harness.executor.drain()
 
     XCTAssertEqual(harness.terminals(id).single?["reason"] as? String, "remote")
+    // A lost accessory skips disconnecting.
+    XCTAssertEqual(harness.states(id), ["connected->disconnected"])
     XCTAssertTrue(streams.closed)
   }
 

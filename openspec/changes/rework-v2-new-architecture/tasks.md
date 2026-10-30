@@ -215,7 +215,7 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
 
 ## 9. Integration and release
 
-- [ ] 9.1 Write `docs/hardware-validation.md` with the device matrix (Android 7, 10, 12, 14, 16, 17; iOS 15, 18, 26, 27; an SPP printer or scanner; an MFi accessory), and add a traceability table that maps every spec scenario to an automated test or a checklist item. Verify that no scenario is unmapped.
+- [x] 9.1 Write `docs/hardware-validation.md` with the device matrix (Android 7, 10, 12, 14, 16, 17; iOS 15, 18, 26, 27; an SPP printer or scanner; an MFi accessory), and add a traceability table that maps every spec scenario to an automated test or a checklist item. Verify that no scenario is unmapped.
 - [ ] 9.2 Add a throughput and latency benchmark to the example app and record results for an SPP device. Verify that the latency budget of 50 ms or less holds, and that throughput does not regress against v1 on the same device.
 - [ ] 9.3 Publish `2.0.0-rc.1` to `next`. Verify that installing it into fresh React Native 0.82 and latest apps builds and passes the echo test on both platforms.
 - [ ] 9.4 Run the full hardware matrix on the release candidate. Verify every checklist item passes, or that each failure has a tracked fix before GA.

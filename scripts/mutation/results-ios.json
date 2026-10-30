@@ -1,0 +1,119 @@
+{
+  "suite": "ios",
+  "commit": "39b79d4",
+  "date": "2026-10-30T08:02:50.633Z",
+  "results": [
+    {
+      "name": "open-needs-both",
+      "file": "ios/Core/Sources/BluetoothClassicCore/AccessorySession.swift",
+      "test": "ConnectTests",
+      "caught": true,
+      "seconds": 2
+    },
+    {
+      "name": "timeout-closes",
+      "file": "ios/Core/Sources/BluetoothClassicCore/ConnectionManager.swift",
+      "test": "ConnectTests",
+      "caught": true,
+      "seconds": 2
+    },
+    {
+      "name": "already-connected",
+      "file": "ios/Core/Sources/BluetoothClassicCore/ConnectionManager.swift",
+      "test": "ConnectTests",
+      "caught": true,
+      "seconds": 2
+    },
+    {
+      "name": "already-connecting",
+      "file": "ios/Core/Sources/BluetoothClassicCore/ConnectionManager.swift",
+      "test": "ConnectTests",
+      "caught": true,
+      "seconds": 2
+    },
+    {
+      "name": "protocol-declared",
+      "file": "ios/Core/Sources/BluetoothClassicCore/ConnectionManager.swift",
+      "test": "ConnectTests",
+      "caught": true,
+      "seconds": 2
+    },
+    {
+      "name": "flush-before-terminal",
+      "file": "ios/Core/Sources/BluetoothClassicCore/AccessorySession.swift",
+      "test": "SessionDataTests",
+      "caught": true,
+      "seconds": 2
+    },
+    {
+      "name": "lost-vs-remote",
+      "file": "ios/Core/Sources/BluetoothClassicCore/AccessorySession.swift",
+      "test": "SessionDataTests",
+      "caught": true,
+      "seconds": 2
+    },
+    {
+      "name": "write-timeout-ends",
+      "file": "ios/Core/Sources/BluetoothClassicCore/AccessorySession.swift",
+      "test": "SessionDataTests",
+      "caught": true,
+      "seconds": 2
+    },
+    {
+      "name": "drain-before-close",
+      "file": "ios/Core/Sources/BluetoothClassicCore/AccessorySession.swift",
+      "test": "SessionDataTests",
+      "caught": true,
+      "seconds": 2
+    },
+    {
+      "name": "partial-writes",
+      "file": "ios/Core/Sources/BluetoothClassicCore/AccessorySession.swift",
+      "test": "SessionDataTests",
+      "caught": true,
+      "seconds": 2
+    },
+    {
+      "name": "batching",
+      "file": "ios/Core/Sources/BluetoothClassicCore/AccessorySession.swift",
+      "test": "SessionDataTests",
+      "caught": true,
+      "seconds": 2
+    },
+    {
+      "name": "invalidate-shutdown",
+      "file": "ios/Core/Sources/BluetoothClassicCore/ModuleCore.swift",
+      "test": "LifecycleTests",
+      "caught": true,
+      "seconds": 2
+    },
+    {
+      "name": "resume-reconcile",
+      "file": "ios/Core/Sources/BluetoothClassicCore/ModuleCore.swift",
+      "test": "LifecycleTests",
+      "caught": true,
+      "seconds": 2
+    },
+    {
+      "name": "registry-filter",
+      "file": "ios/Core/Sources/BluetoothClassicCore/AccessoryRegistry.swift",
+      "test": "AccessoryTests",
+      "caught": true,
+      "seconds": 2
+    },
+    {
+      "name": "picker-cancel",
+      "file": "ios/Core/Sources/BluetoothClassicCore/ModuleCore.swift",
+      "test": "AccessoryTests",
+      "caught": true,
+      "seconds": 2
+    },
+    {
+      "name": "plist-safe",
+      "file": "ios/Core/Sources/BluetoothClassicCore/Capabilities.swift",
+      "test": "ContractTests",
+      "caught": true,
+      "seconds": 2
+    }
+  ]
+}
