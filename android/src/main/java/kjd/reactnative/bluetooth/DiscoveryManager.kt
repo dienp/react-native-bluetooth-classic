@@ -100,8 +100,13 @@ internal class DiscoveryManager(
 
   /** Ends the running session, which resolves with what it found. Call on the main thread. */
   fun cancel(promise: SafePromise) {
-    session?.let(::stop)
+    stop()
     promise.resolve(null)
+  }
+
+  /** Ends the running session, if any, before a connection attempt. Call on the main thread. */
+  fun stop() {
+    session?.let { stop(it) }
   }
 
   override fun onAdapterStateChanged(state: String, previousState: String) {

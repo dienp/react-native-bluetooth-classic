@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Button, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ConnectScreen } from './screens/ConnectScreen';
 import { DiscoveryScreen } from './screens/DiscoveryScreen';
+import { EchoScreen } from './screens/EchoScreen';
 import { OverviewScreen } from './screens/OverviewScreen';
 import { PairingScreen } from './screens/PairingScreen';
 
@@ -8,6 +10,8 @@ const SCREENS = {
   Overview: OverviewScreen,
   Discovery: DiscoveryScreen,
   Pairing: PairingScreen,
+  Connect: ConnectScreen,
+  Echo: EchoScreen,
 };
 
 type ScreenName = keyof typeof SCREENS;
@@ -46,6 +50,7 @@ const styles = StyleSheet.create({
   },
   tabs: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
 });

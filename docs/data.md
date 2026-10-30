@@ -1,6 +1,6 @@
 # Connections and data
 
-> The native modules are still stubs in this v2 pre-release; this page describes the contract the JavaScript layer already implements and tests.
+> Android implements this contract natively. The iOS module is still a stub in this v2 pre-release.
 
 ## Connecting
 

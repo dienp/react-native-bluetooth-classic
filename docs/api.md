@@ -1,6 +1,6 @@
 # API reference
 
-> v2 is in development. The JavaScript layer described here is implemented and tested. Natively, Android implements adapter state, permissions, `requestEnable`, `openSettings`, `setAdapterName`, discovery, pairing and bond events (see [android.md](./android.md)); everything else still rejects with `UNSUPPORTED_ON_PLATFORM`.
+> v2 is in development. The JavaScript layer described here is implemented and tested. Android implements every API natively (see [android.md](./android.md)); on iOS, everything still rejects with `UNSUPPORTED_ON_PLATFORM`.
 
 ```ts
 import * as BluetoothClassic from '@dynlabs/react-native-bluetooth-classic';

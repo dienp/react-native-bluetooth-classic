@@ -128,14 +128,14 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
 
 ## 6. Android connections and data
 
-- [ ] 6.1 Introduce the `RfcommTransport` interface, a `BluetoothSocket` implementation, and a fake backed by piped streams. Verify with JVM tests that the fake supports peer close, `-1` reads, I/O errors and slow writes.
-- [ ] 6.2 Implement `ConnectionManager`:
+- [x] 6.1 Introduce the `RfcommTransport` interface, a `BluetoothSocket` implementation, and a fake backed by piped streams. Verify with JVM tests that the fake supports peer close, `-1` reads, I/O errors and slow writes.
+- [x] 6.2 Implement `ConnectionManager`:
   - `connectionId` generation and the target index, rejecting `ALREADY_CONNECTED`/`ALREADY_CONNECTING` with `connectionId`
   - `compareAndSet` state transitions
   - the stale-callback guard
 
   Verify with JVM tests, including "stale events never affect newer connections".
-- [ ] 6.3 Implement `connect()`:
+- [x] 6.3 Implement `connect()`:
   - cancel discovery first
   - `secure`/`insecure` transport and `uuid`
   - `timeoutMs`, enforced by closing the socket
@@ -143,21 +143,21 @@ Groups 4–6 (Android) and group 7 (iOS) can run in parallel once groups 1–3 h
   - the opt-in `fallbackChannel`, which closes the first socket and reports both reasons
 
   Verify with JVM tests for every "Connect as a client on Android" and "fallback" scenario.
-- [ ] 6.4 Implement the read loop:
+- [x] 6.4 Implement the read loop:
   - `-1` means a `'remote'` close
   - an `IOException` means `'remote'`, or `'error'`/`BLUETOOTH_DISABLED` when the adapter is off
   - a coalescing batcher (16 KiB or 16 ms) emits base64 data with `seq`
 
   Verify with JVM tests, including the API 37 `-1` path and a latency assertion of 50 ms or less.
-- [ ] 6.5 Implement the per-connection write executor:
+- [x] 6.5 Implement the per-connection write executor:
   - ordered, chunked writes that resolve after a full write
   - `WRITE_FAILED` ends the connection
   - `WRITE_TIMEOUT` closes the socket and fails queued writes with `NOT_CONNECTED`
 
   Verify with JVM tests for every `data-transfer` write scenario.
-- [ ] 6.6 Implement `disconnect()`: drain queued writes up to `timeoutMs`, then close; idempotent; remaining writes reject `NOT_CONNECTED`. Verify with JVM tests for "Write then disconnect immediately" and "Disconnect twice".
-- [ ] 6.7 Implement `accept()` and `cancelAccept()`: `ACCEPT_TIMEOUT`, `ACCEPT_ALREADY_RUNNING`, `ACCEPT_FAILED`, `ACCEPT_CANCELLED`, and closing the listening socket on settle. Verify with JVM tests that include a later `accept()` succeeding after a cancel.
-- [ ] 6.8 Handle global terminations:
+- [x] 6.6 Implement `disconnect()`: drain queued writes up to `timeoutMs`, then close; idempotent; remaining writes reject `NOT_CONNECTED`. Verify with JVM tests for "Write then disconnect immediately" and "Disconnect twice".
+- [x] 6.7 Implement `accept()` and `cancelAccept()`: `ACCEPT_TIMEOUT`, `ACCEPT_ALREADY_RUNNING`, `ACCEPT_FAILED`, `ACCEPT_CANCELLED`, and closing the listening socket on settle. Verify with JVM tests that include a later `accept()` succeeding after a cancel.
+- [x] 6.8 Handle global terminations:
   - adapter off ends every connection with `'error'`/`BLUETOOTH_DISABLED`, and rejects pending connect and accept calls
   - `invalidate()` closes every socket and thread
 

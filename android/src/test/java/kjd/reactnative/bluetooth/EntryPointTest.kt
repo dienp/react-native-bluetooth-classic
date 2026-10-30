@@ -117,15 +117,12 @@ class EntryPointTest : ModuleTest() {
   }
 
   @Test
-  fun `iOS-only and not yet implemented operations reject with UNSUPPORTED_ON_PLATFORM`() {
+  fun `iOS-only operations reject with UNSUPPORTED_ON_PLATFORM`() {
     val picker = call { module.showAccessoryPicker(null, it) }
     assertEquals(ErrorCode.UNSUPPORTED_ON_PLATFORM, picker.code)
     assertEquals("showAccessoryPicker() is only available on iOS", picker.message)
 
-    assertEquals(
-      ErrorCode.UNSUPPORTED_ON_PLATFORM,
-      call { module.connect("op-3", "00:11:22:33:44:55", JavaOnlyMap.of("timeoutMs", 1_000.0), it) }.code
-    )
+    assertEquals(ErrorCode.UNSUPPORTED_ON_PLATFORM, call { module.getConnectedAccessories(it) }.code)
   }
 
   @Test

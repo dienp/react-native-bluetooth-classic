@@ -23,6 +23,12 @@ export const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     paddingVertical: 8,
   },
+  switchRow: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 8,
+  },
   input: {
     borderWidth: StyleSheet.hairlineWidth,
     fontFamily: 'Courier',
