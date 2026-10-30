@@ -255,6 +255,20 @@ describe('inbound stream', () => {
     );
   });
 
+  it('ends an iOS session with BUFFER_OVERFLOW when no consumer drains it', async () => {
+    const { fake, id } = iosWithAccessory();
+    const connection = await connect(id, { maxBufferBytes: 1024 });
+    const terminal = jest.fn();
+    connection.onDisconnected(terminal);
+
+    fake.pushData(connection.id, new Uint8Array(1025));
+
+    expect(terminal.mock.calls[0][0]).toMatchObject({
+      reason: 'error',
+      error: { code: ErrorCode.BUFFER_OVERFLOW, platform: 'ios' },
+    });
+  });
+
   it('logs sequence gaps', async () => {
     const { fake, connection } = await open();
     const error = jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -287,6 +301,20 @@ describe('readers', () => {
     fake.pushData(connection.id, '\nREADY\r\n');
     await expect(reader.read()).resolves.toBe('OK');
     await expect(reader.read()).resolves.toBe('READY');
+  });
+
+  it('decodes an invalid byte as U+FFFD and keeps decoding the frames after it', async () => {
+    const { fake, connection } = await open();
+    const reader = connection.createReader({
+      framer: delimiter('\n'),
+      encoding: 'utf8',
+    });
+
+    fake.pushData(connection.id, new Uint8Array([0x41, 0xff, 0x42, 0x0a]));
+    fake.pushData(connection.id, 'caf\u00e9\n');
+
+    await expect(reader.read()).resolves.toBe('A\ufffdB');
+    await expect(reader.read()).resolves.toBe('caf\u00e9');
   });
 
   it('returns Uint8Array frames without an encoding', async () => {

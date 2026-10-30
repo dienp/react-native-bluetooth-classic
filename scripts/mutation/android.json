@@ -1,0 +1,226 @@
+[
+  {
+    "name": "dedupe",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/DiscoveryManager.kt",
+    "test": "DiscoveryTest",
+    "old": "    if (previous == null) {\n      Logger.debug",
+    "new": "    if (true) {\n      Logger.debug"
+  },
+  {
+    "name": "stale-finish",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/DiscoveryManager.kt",
+    "test": "DiscoveryTest",
+    "old": "-> if (session.started) finish(session, null)",
+    "new": "-> finish(session, null)"
+  },
+  {
+    "name": "adapter-off-discovery",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/DiscoveryManager.kt",
+    "test": "DiscoveryTest",
+    "old": "    if (state != AdapterMonitor.ON) {\n      finish(session",
+    "new": "    if (false) {\n      finish(session"
+  },
+  {
+    "name": "start-guard",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/DiscoveryManager.kt",
+    "test": "DiscoveryTest",
+    "old": "        finish(session, BluetoothClassicException(ErrorCode.DISCOVERY_FAILED, \"The OS did not start discovery\"))",
+    "new": "        Unit"
+  },
+  {
+    "name": "address-filter",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/BondManager.kt",
+    "test": "PairingTest",
+    "old": "    val pending = pairings.remove(key) ?: return",
+    "new": "    val pending = (pairings.remove(key) ?: pairings.values.firstOrNull()?.also { p -> pairings.values.remove(p) }) ?: return"
+  },
+  {
+    "name": "timeout-cancel",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/BondManager.kt",
+    "test": "PairingTest",
+    "old": "        bondApi.cancelBondProcess(device)",
+    "new": "        Unit"
+  },
+  {
+    "name": "unpair-false",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/BondManager.kt",
+    "test": "UnpairTest",
+    "old": "    if (!removed) throw unpairBlocked(key, null)",
+    "new": ""
+  },
+  {
+    "name": "key-missing-sdk",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/BondManager.kt",
+    "test": "BondEventsTest",
+    "old": "    if (Build.VERSION.SDK_INT >= Capabilities.BOND_LOSS_MIN_SDK) filter.addAction(ACTION_KEY_MISSING)",
+    "new": "    filter.addAction(ACTION_KEY_MISSING)"
+  },
+  {
+    "name": "invalidate-bonds",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/BluetoothClassicModule.kt",
+    "test": "InvalidateTest",
+    "old": "    adapterMonitor.stop()\n    bonds.stop()",
+    "new": "    adapterMonitor.stop()"
+  },
+  {
+    "name": "stale-index-remove",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+    "test": "ConnectionManagerTest",
+    "old": "byAddress.remove(connection.address, connection)",
+    "new": "byAddress.remove(connection.address)"
+  },
+  {
+    "name": "stale-index-check",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+    "test": "ConnectionManagerTest",
+    "old": "      byAddress[address]?.takeIf { it.isOpen }?.let {\n        throw",
+    "new": "      byAddress[address]?.let {\n        throw"
+  },
+  {
+    "name": "already-connecting",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+    "test": "ConnectionManagerTest",
+    "old": "      if (address in connecting) {",
+    "new": "      if (false) {"
+  },
+  {
+    "name": "timeout-close",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+    "test": "ConnectTest",
+    "old": "    fun abort(error: Throwable) {\n      if (!settle()) return\n      closeQuietly(synchronized(this) { resource })",
+    "new": "    fun abort(error: Throwable) {\n      if (!settle()) return"
+  },
+  {
+    "name": "late-success",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+    "test": "ConnectTest",
+    "old": "      if (!operation.settle()) {\n        closeQuietly(socket)\n        return\n      }",
+    "new": "      operation.settle()"
+  },
+  {
+    "name": "fallback-close-first",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+    "test": "ConnectTest",
+    "old": "          operation.closeResource()\n          Logger.debug",
+    "new": "          Logger.debug"
+  },
+  {
+    "name": "fallback-both-reasons",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+    "test": "ConnectTest",
+    "old": "            throw IOException(\"uuid ${options.uuid}: ${first.message}; channel $channel: ${second.message}\", second)",
+    "new": "            throw second"
+  },
+  {
+    "name": "fallback-default",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+    "test": "ConnectTest",
+    "old": "          val channel = options.fallbackChannel ?: throw first",
+    "new": "          val channel = options.fallbackChannel ?: 1"
+  },
+  {
+    "name": "eos-remote",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+    "test": "ReadLoopTest",
+    "old": "        if (count < 0) {",
+    "new": "        if (false) {"
+  },
+  {
+    "name": "adapter-off-read",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+    "test": "ReadLoopTest",
+    "old": "      if (adapterOn()) {\n        Logger.debug",
+    "new": "      if (true) {\n        Logger.debug"
+  },
+  {
+    "name": "flush-before-terminal",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+    "test": "ReadLoopTest",
+    "old": "      if (state == State.DISCONNECTED) return false\n      flushLocked()",
+    "new": "      if (state == State.DISCONNECTED) return false"
+  },
+  {
+    "name": "batch-size-flush",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+    "test": "ReadLoopTest",
+    "old": "      if (pending.size() >= BATCH_BYTES) {",
+    "new": "      if (false) {"
+  },
+  {
+    "name": "write-failed-ends",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+    "test": "WriteTest",
+    "old": "      if (end(Terminal.error(ErrorCode.WRITE_FAILED, \"A write failed\", t))) {",
+    "new": "      if (true) {"
+  },
+  {
+    "name": "write-timeout-ends",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+    "test": "WriteTest",
+    "old": "    end(Terminal.error(ErrorCode.WRITE_TIMEOUT, \"A write did not complete in time\"))",
+    "new": "    Unit"
+  },
+  {
+    "name": "fail-queued-writes",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+    "test": "DisconnectTest",
+    "old": "      if (write.done.compareAndSet(false, true)) write.promise.reject(notConnected())",
+    "new": "      Unit"
+  },
+  {
+    "name": "drain-before-close",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+    "test": "DisconnectTest",
+    "old": "      writer.execute {\n        timer.cancel()\n        finish()\n      }",
+    "new": "      finish()"
+  },
+  {
+    "name": "accept-close-server",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+    "test": "AcceptTest",
+    "old": "      } finally {\n        // The listening socket never outlives the accept() call.\n        closeQuietly(server)\n      }",
+    "new": "      } finally {}"
+  },
+  {
+    "name": "accept-one-at-a-time",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+    "test": "AcceptTest",
+    "old": "      if (accepting != null) {",
+    "new": "      if (false) {"
+  },
+  {
+    "name": "accept-slot-freed",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+    "test": "AcceptTest",
+    "old": "        if (accepting === this) accepting = null",
+    "new": "        Unit"
+  },
+  {
+    "name": "module-adapter-off",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/BluetoothClassicModule.kt",
+    "test": "ConnectionModuleTest",
+    "old": "    adapterMonitor.addListener { state, _ -> if (state != AdapterMonitor.ON) connections.adapterOff() }\n",
+    "new": ""
+  },
+  {
+    "name": "module-invalidate",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/BluetoothClassicModule.kt",
+    "test": "ConnectionModuleTest",
+    "old": "    connections.shutdown()\n",
+    "new": ""
+  },
+  {
+    "name": "module-stop-discovery",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/BluetoothClassicModule.kt",
+    "test": "ConnectionModuleTest",
+    "old": "beforeAttempt = discovery::stop",
+    "new": "beforeAttempt = {}"
+  },
+  {
+    "name": "shutdown-in-flight",
+    "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+    "test": "ConnectionModuleTest",
+    "old": "      writes = queuedWrites.toList() + listOfNotNull(inFlight)",
+    "new": "      writes = queuedWrites.toList()"
+  }
+]

@@ -5,6 +5,7 @@ import {
   uninstallFakeNativeModule,
 } from '../../../src/__fakes__/install';
 import { AccessoriesScreen } from '../screens/AccessoriesScreen';
+import { BenchmarkScreen } from '../screens/BenchmarkScreen';
 import { ConnectScreen } from '../screens/ConnectScreen';
 import { DiscoveryScreen } from '../screens/DiscoveryScreen';
 import { EchoScreen } from '../screens/EchoScreen';
@@ -137,4 +138,42 @@ test('the accessories screen lists accessories, shows the picker and connects', 
   expect(
     await screen.findByText('Connected conn-1 with com.acme.serial')
   ).toBeTruthy();
+});
+
+test('the benchmark screen measures throughput and latency against a loopback', async () => {
+  const fake = installFakeNativeModule({ os: 'android', apiLevel: 36 });
+  fake.addDevice({ address: PRINTER, name: 'Printer', bonded: true });
+  const connection = await connect(PRINTER);
+  // Play a loopback device: return every byte written.
+  let echoed = 0;
+  const loopback = setInterval(() => {
+    const written = fake.writtenBytes(connection.id);
+    if (written.length > echoed) {
+      fake.pushData(connection.id, written.slice(echoed));
+      echoed = written.length;
+    }
+  }, 1);
+
+  try {
+    await render(
+      <BenchmarkScreen throughputBytes={20_000} latencyRounds={5} />
+    );
+    expect(await screen.findByText('Using conn-1 (Printer)')).toBeTruthy();
+
+    await fireEvent.press(screen.getByText('Measure throughput'));
+    expect(
+      await screen.findByText(
+        /^Throughput: \d+ KiB\/s \(20000 bytes in \d+ ms, 0 mismatched\)$/
+      )
+    ).toBeTruthy();
+
+    await fireEvent.press(screen.getByText('Measure latency'));
+    expect(
+      await screen.findByText(
+        /^Latency: median [\d.]+ ms, p95 [\d.]+ ms over 5 round trips$/
+      )
+    ).toBeTruthy();
+  } finally {
+    clearInterval(loopback);
+  }
 });

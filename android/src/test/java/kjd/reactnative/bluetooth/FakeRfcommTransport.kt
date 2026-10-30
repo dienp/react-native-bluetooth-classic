@@ -80,6 +80,7 @@ internal class FakeSocket(
   private val written = ByteArrayOutputStream()
   private var peerClosed = false
   private var readFailure: IOException? = null
+  private var readCrash: RuntimeException? = null
   private var writeFailure: IOException? = null
   private var writesBlocked = false
 
@@ -122,9 +123,12 @@ internal class FakeSocket(
 
       override fun read(b: ByteArray, off: Int, len: Int): Int =
         lock.withLock {
-          while (!closed && readFailure == null && inbound.isEmpty() && !peerClosed) changed.await()
+          while (!closed && readFailure == null && readCrash == null && inbound.isEmpty() && !peerClosed) {
+            changed.await()
+          }
           if (closed) throw IOException("socket closed")
           readFailure?.let { throw it }
+          readCrash?.let { throw it }
           if (inbound.isEmpty()) return -1
           var count = 0
           while (count < len && inbound.isNotEmpty()) b[off + count++] = inbound.removeFirst()
@@ -174,6 +178,13 @@ internal class FakeSocket(
   fun failReads(error: IOException = IOException("bt socket closed, read return: -1")) =
     lock.withLock {
       readFailure = error
+      changed.signalAll()
+    }
+
+  /** Reads throw something that is not an I/O error, like a bug below the library. */
+  fun crashReads(error: RuntimeException) =
+    lock.withLock {
+      readCrash = error
       changed.signalAll()
     }
 

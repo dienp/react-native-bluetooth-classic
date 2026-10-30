@@ -120,6 +120,28 @@ internal class ConnectionManagerTest : ConnectionTest() {
   }
 
   @Test
+  fun `Bluetooth turning off ends connections with BLUETOOTH_DISABLED and rejects pending operations`() {
+    val (id, socket) = connected()
+    transport.onConnect = { ConnectResult.Hang }
+    val pendingConnect = connect(other)
+    val pendingAccept = accept()
+    transport.awaitSocket(1)
+    val server = transport.awaitServer()
+
+    manager.adapterOff()
+
+    val terminal = events.awaitTerminal(id)
+    assertEquals(Terminal.ERROR, terminal.reason)
+    assertEquals(ErrorCode.BLUETOOTH_DISABLED, terminal.code)
+    assertEquals(ErrorCode.BLUETOOTH_DISABLED, pendingConnect.await().code)
+    assertEquals(ErrorCode.BLUETOOTH_DISABLED, pendingAccept.await().code)
+    socket.awaitClosed()
+    transport.sockets[1].awaitClosed()
+    server.awaitClosed()
+    assertTrue(openIds().isEmpty())
+  }
+
+  @Test
   fun `a device can be connected again once its connection ended`() {
     val (first, socket) = connected()
     disconnect(first).await()

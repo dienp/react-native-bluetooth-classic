@@ -1,0 +1,231 @@
+{
+  "suite": "android",
+  "commit": "61a424c",
+  "date": "2026-10-30T08:15:46.431Z",
+  "results": [
+    {
+      "name": "dedupe",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/DiscoveryManager.kt",
+      "test": "DiscoveryTest",
+      "caught": true,
+      "seconds": 19
+    },
+    {
+      "name": "stale-finish",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/DiscoveryManager.kt",
+      "test": "DiscoveryTest",
+      "caught": true,
+      "seconds": 19
+    },
+    {
+      "name": "adapter-off-discovery",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/DiscoveryManager.kt",
+      "test": "DiscoveryTest",
+      "caught": true,
+      "seconds": 20
+    },
+    {
+      "name": "start-guard",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/DiscoveryManager.kt",
+      "test": "DiscoveryTest",
+      "caught": true,
+      "seconds": 18
+    },
+    {
+      "name": "address-filter",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/BondManager.kt",
+      "test": "PairingTest",
+      "caught": true,
+      "seconds": 11
+    },
+    {
+      "name": "timeout-cancel",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/BondManager.kt",
+      "test": "PairingTest",
+      "caught": true,
+      "seconds": 11
+    },
+    {
+      "name": "unpair-false",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/BondManager.kt",
+      "test": "UnpairTest",
+      "caught": true,
+      "seconds": 11
+    },
+    {
+      "name": "key-missing-sdk",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/BondManager.kt",
+      "test": "BondEventsTest",
+      "caught": true,
+      "seconds": 19
+    },
+    {
+      "name": "invalidate-bonds",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/BluetoothClassicModule.kt",
+      "test": "InvalidateTest",
+      "caught": true,
+      "seconds": 12
+    },
+    {
+      "name": "stale-index-remove",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+      "test": "ConnectionManagerTest",
+      "caught": true,
+      "seconds": 10
+    },
+    {
+      "name": "stale-index-check",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+      "test": "ConnectionManagerTest",
+      "caught": true,
+      "seconds": 9
+    },
+    {
+      "name": "already-connecting",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+      "test": "ConnectionManagerTest",
+      "caught": true,
+      "seconds": 14
+    },
+    {
+      "name": "timeout-close",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+      "test": "ConnectTest",
+      "caught": true,
+      "seconds": 19
+    },
+    {
+      "name": "late-success",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+      "test": "ConnectTest",
+      "caught": true,
+      "seconds": 10
+    },
+    {
+      "name": "fallback-close-first",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+      "test": "ConnectTest",
+      "caught": true,
+      "seconds": 10
+    },
+    {
+      "name": "fallback-both-reasons",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+      "test": "ConnectTest",
+      "caught": true,
+      "seconds": 10
+    },
+    {
+      "name": "fallback-default",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+      "test": "ConnectTest",
+      "caught": true,
+      "seconds": 10
+    },
+    {
+      "name": "eos-remote",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+      "test": "ReadLoopTest",
+      "caught": true,
+      "seconds": 19
+    },
+    {
+      "name": "adapter-off-read",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+      "test": "ReadLoopTest",
+      "caught": true,
+      "seconds": 10
+    },
+    {
+      "name": "flush-before-terminal",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+      "test": "ReadLoopTest",
+      "caught": true,
+      "seconds": 9
+    },
+    {
+      "name": "batch-size-flush",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+      "test": "ReadLoopTest",
+      "caught": true,
+      "seconds": 14
+    },
+    {
+      "name": "write-failed-ends",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+      "test": "WriteTest",
+      "caught": true,
+      "seconds": 14
+    },
+    {
+      "name": "write-timeout-ends",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+      "test": "WriteTest",
+      "caught": true,
+      "seconds": 15
+    },
+    {
+      "name": "fail-queued-writes",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+      "test": "DisconnectTest",
+      "caught": true,
+      "seconds": 19
+    },
+    {
+      "name": "drain-before-close",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+      "test": "DisconnectTest",
+      "caught": true,
+      "seconds": 9
+    },
+    {
+      "name": "accept-close-server",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+      "test": "AcceptTest",
+      "caught": true,
+      "seconds": 9
+    },
+    {
+      "name": "accept-one-at-a-time",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+      "test": "AcceptTest",
+      "caught": true,
+      "seconds": 14
+    },
+    {
+      "name": "accept-slot-freed",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/ConnectionManager.kt",
+      "test": "AcceptTest",
+      "caught": true,
+      "seconds": 19
+    },
+    {
+      "name": "module-adapter-off",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/BluetoothClassicModule.kt",
+      "test": "ConnectionModuleTest",
+      "caught": true,
+      "seconds": 16
+    },
+    {
+      "name": "module-invalidate",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/BluetoothClassicModule.kt",
+      "test": "ConnectionModuleTest",
+      "caught": true,
+      "seconds": 16
+    },
+    {
+      "name": "module-stop-discovery",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/BluetoothClassicModule.kt",
+      "test": "ConnectionModuleTest",
+      "caught": true,
+      "seconds": 11
+    },
+    {
+      "name": "shutdown-in-flight",
+      "file": "android/src/main/java/kjd/reactnative/bluetooth/RfcommConnection.kt",
+      "test": "ConnectionModuleTest",
+      "caught": true,
+      "seconds": 11
+    }
+  ]
+}

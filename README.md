@@ -62,6 +62,8 @@ Every failure is a `BluetoothClassicError` with a `code`; see [docs/errors.md](.
 - [iOS: MFi accessories, Info.plist, the picker and sessions](./docs/ios.md)
 - [Expo: the config plugin](./docs/expo.md)
 - [Testing: the Jest mock](./docs/testing.md)
+- [Hardware validation: device matrix, checklist and scenario traceability](./docs/hardware-validation.md)
+- [Test report: every automated test case and its latest result](./docs/test-report.md)
 - [Migrating from v1](./docs/migration-v1-to-v2.md)
 
 ## Plan

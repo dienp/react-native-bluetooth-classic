@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { AccessoriesScreen } from './screens/AccessoriesScreen';
+import { BenchmarkScreen } from './screens/BenchmarkScreen';
 import { ConnectScreen } from './screens/ConnectScreen';
 import { DiscoveryScreen } from './screens/DiscoveryScreen';
 import { EchoScreen } from './screens/EchoScreen';
@@ -20,6 +21,7 @@ const ANDROID_SCREENS = {
   Pairing: PairingScreen,
   Connect: ConnectScreen,
   Echo: EchoScreen,
+  Benchmark: BenchmarkScreen,
 };
 
 // iOS has no discovery or pairing: MFi accessories come from the picker.
@@ -27,9 +29,10 @@ const IOS_SCREENS = {
   Overview: OverviewScreen,
   Accessories: AccessoriesScreen,
   Echo: EchoScreen,
+  Benchmark: BenchmarkScreen,
 };
 
-const SCREENS: Record<string, () => React.JSX.Element> =
+const SCREENS: Record<string, React.ComponentType> =
   Platform.OS === 'ios' ? IOS_SCREENS : ANDROID_SCREENS;
 
 export default function App() {

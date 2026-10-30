@@ -50,6 +50,7 @@
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "test": "jest",
     "test:android": "cd example/android && ./gradlew :dynlabs_react-native-bluetooth-classic:testDebugUnitTest --console=plain",
+    "test:report": "bash scripts/test-report.sh",
     "openspec:validate": "openspec validate --all --strict",
     "release": "release-it",
     "release:rc": "release-it --preRelease=rc --npm.tag=next",
@@ -76,7 +77,7 @@
   },
   "author": "Kenneth Davidson <ken.j.davidson@live.ca> (https://github.com/kenjdavidson)",
   "contributors": [
-    "Jakub Martyčák <martycakjakub@gmail.com> (https://github.com/rusel1989)",
+    "Jakub Marty\u010d\u00e1k <martycakjakub@gmail.com> (https://github.com/rusel1989)",
     "Tony Lara <tony.lara.p@gmail.com> (https://github.com/tonyl)",
     "redloro@gmail.com (https://github.com/redloro)",
     "iamandiradustefan@gmail.com (https://github.com/iamandiradu)",

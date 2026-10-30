@@ -1,0 +1,114 @@
+[
+  {
+    "name": "open-needs-both",
+    "file": "ios/Core/Sources/BluetoothClassicCore/AccessorySession.swift",
+    "test": "ConnectTests",
+    "old": "guard inputOpen && outputOpen else { return }",
+    "new": "guard inputOpen || outputOpen else { return }"
+  },
+  {
+    "name": "timeout-closes",
+    "file": "ios/Core/Sources/BluetoothClassicCore/ConnectionManager.swift",
+    "test": "ConnectTests",
+    "old": "    operation.timer?.cancel()\n    operation.session.cancelOpen()\n    operation.promise.reject(error)",
+    "new": "    operation.timer?.cancel()\n    operation.promise.reject(error)"
+  },
+  {
+    "name": "already-connected",
+    "file": "ios/Core/Sources/BluetoothClassicCore/ConnectionManager.swift",
+    "test": "ConnectTests",
+    "old": "first(where: { $0.key == key && $0.isOpen })",
+    "new": "first(where: { _ in false })"
+  },
+  {
+    "name": "already-connecting",
+    "file": "ios/Core/Sources/BluetoothClassicCore/ConnectionManager.swift",
+    "test": "ConnectTests",
+    "old": "if operations.values.contains(where: { $0.session.key == key }) {",
+    "new": "if false {"
+  },
+  {
+    "name": "protocol-declared",
+    "file": "ios/Core/Sources/BluetoothClassicCore/ConnectionManager.swift",
+    "test": "ConnectTests",
+    "old": "      guard declared.contains(requested) else {",
+    "new": "      guard true else {"
+  },
+  {
+    "name": "flush-before-terminal",
+    "file": "ios/Core/Sources/BluetoothClassicCore/AccessorySession.swift",
+    "test": "SessionDataTests",
+    "old": "    guard isOpen else { return false }\n    flush()",
+    "new": "    guard isOpen else { return false }"
+  },
+  {
+    "name": "lost-vs-remote",
+    "file": "ios/Core/Sources/BluetoothClassicCore/AccessorySession.swift",
+    "test": "SessionDataTests",
+    "old": "    } else if accessory.isConnected {",
+    "new": "    } else if true {"
+  },
+  {
+    "name": "write-timeout-ends",
+    "file": "ios/Core/Sources/BluetoothClassicCore/AccessorySession.swift",
+    "test": "SessionDataTests",
+    "old": "    end(.error(ErrorCode.WRITE_TIMEOUT, \"A write did not complete in time\"))",
+    "new": ""
+  },
+  {
+    "name": "drain-before-close",
+    "file": "ios/Core/Sources/BluetoothClassicCore/AccessorySession.swift",
+    "test": "SessionDataTests",
+    "old": "      if writes.isEmpty || timeoutMs <= 0 {",
+    "new": "      if true {"
+  },
+  {
+    "name": "partial-writes",
+    "file": "ios/Core/Sources/BluetoothClassicCore/AccessorySession.swift",
+    "test": "SessionDataTests",
+    "old": "      write.offset += written\n      if write.offset == write.data.count {",
+    "new": "      write.offset += written\n      if true {"
+  },
+  {
+    "name": "batching",
+    "file": "ios/Core/Sources/BluetoothClassicCore/AccessorySession.swift",
+    "test": "SessionDataTests",
+    "old": "      if pending.count >= AccessorySession.batchBytes && isOpen { flush() }",
+    "new": "      flush()"
+  },
+  {
+    "name": "invalidate-shutdown",
+    "file": "ios/Core/Sources/BluetoothClassicCore/ModuleCore.swift",
+    "test": "LifecycleTests",
+    "old": "    registry.stop()\n    connections.shutdown()",
+    "new": "    registry.stop()"
+  },
+  {
+    "name": "resume-reconcile",
+    "file": "ios/Core/Sources/BluetoothClassicCore/ModuleCore.swift",
+    "test": "LifecycleTests",
+    "old": "    connections.reconcile()",
+    "new": ""
+  },
+  {
+    "name": "registry-filter",
+    "file": "ios/Core/Sources/BluetoothClassicCore/AccessoryRegistry.swift",
+    "test": "AccessoryTests",
+    "old": "    accessory.protocolStrings.contains(where: declaredProtocols.contains)",
+    "new": "    true"
+  },
+  {
+    "name": "picker-cancel",
+    "file": "ios/Core/Sources/BluetoothClassicCore/ModuleCore.swift",
+    "test": "AccessoryTests",
+    "old": "promise.reject(CoreError(ErrorCode.USER_REJECTED,",
+    "new": "promise.reject(CoreError(ErrorCode.UNKNOWN,"
+  },
+  {
+    "name": "plist-safe",
+    "file": "ios/Core/Sources/BluetoothClassicCore/Capabilities.swift",
+    "test": "ContractTests",
+    "old": "entries.compactMap { $0 as? String }.filter { !$0.isEmpty && seen.insert($0).inserted }",
+    "new": "entries.compactMap { $0 as? String }"
+  }
+]
