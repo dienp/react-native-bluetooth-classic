@@ -1,12 +1,16 @@
 name: CI
+# Turned off for now: runs only when started from the Actions tab (CI → Run
+# workflow). To turn it back on, restore the push, pull_request and
+# merge_group triggers commented out below.
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-  merge_group:
-    types:
-      - checks_requested
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
+  # pull_request:
+  # merge_group:
+  #   types:
+  #     - checks_requested
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
